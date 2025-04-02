@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimations</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="notes.css">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .household-member-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .household-member {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            width: 80%;
+            align-items: center;
+        }
+
+        .household-member p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Estimated Eligibilities</h1>
+    <div id="notes-list"></div>
+    <textarea id="note-input" placeholder="Write your note here..."></textarea>
+    <button id="save-note">Save</button>
+    <div id="householdMemberContainer" class="household-member-container"></div>
+    
+</body>
+    <script src="estimations.js" defer></script>
+    <script src="SNAP.js" defer></script>
+    <script src="notes.js"></script>
+    </script>
+    
+
+
+</html>

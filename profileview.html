@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Client Profile</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="notes.css">
+    <style>
+        .readonly {
+            pointer-events: none;
+            user-select: none;
+        }
+        .readonly input,
+        .readonly select,
+        .readonly button,
+        .readonly div[data-value] {
+            pointer-events: none;
+            user-select: none;
+            background-color: #f0f0f0; /* Visually indicate read-only fields */
+            color: #a0a0a0; /* Optional: to visually indicate read-only text */
+        }
+        .readonly div[data-value].selected {
+            background-color: #d0d0d0; /* Highlight selected options */
+            color: #000; /* Optional: to visually indicate selected text */
+        }
+        .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .readonly .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .interactive2 {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .household-member-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    align-items: center; /* Center the content horizontally */
+}
+
+.household-member {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 80%; /* Adjust the width as needed */
+    align-items: center; /* Center the content horizontally */
+}
+
+.selection-box {
+    margin-top: 10px;
+    text-align: center; /* Center the text inside the selection box */
+}
+
+.selection-option {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.selection-option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+    </style>
+</head>
+<body class="readonly">
+    <div class="button-container">
+        <button onclick="window.location.href='home.html'" class="interactive">Home</button>
+        <button id="household-view-button" class="interactive" onclick="GoToHousehold()">Household</button>
+        <button id="relationships-view-button" class="interactive">Relationships</button>
+        <button id="current-enrollments-view-button" class="interactive" onclick="goToCRview()">Current Enrollments</button>
+        <button id="income-view-button" class="interactive" onclick="GoToIncome()">Income</button>
+        <button id="assets-view-button" class="interactive" onclick="goToAssets()">Assets</button>
+        <button id="expenses-view-button" class="interactive" onclick="goToExpenses()">Expenses</button>
+        <button onclick="window.location.href='directory.html'" class="interactive">Directory</button>
+    </div>
+    <h1>Edit Client Profile</h1>
+    <div id="notes-list"></div>
+    <textarea id="note-input" class="interactive2" placeholder="Write your note here..."></textarea>
+    <button id="save-note" class="interactive">Save</button>
+    <form id="clientProfileForm">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" name="firstName" required><br><br>
+        
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" name="lastName" required><br><br>
+        
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" name="phoneNumber" required><br><br>
+        
+        <label for="streetAddress">Street Address:</label>
+        <input type="text" id="streetAddress" name="streetAddress" required><br><br>
+        
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required><br><br>
+        
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state" required><br><br>
+        
+        <label for="zipCode">Zip Code:</label>
+        <input type="text" id="zipCode" name="zipCode" required><br><br>
+        
+        <label for="county">County:</label>
+        <input type="text" id="county" name="county" required><br><br>
+    </form>
+
+    <button id="lognewcall" onclick="goToLogging()" class="interactive">Log New Call</button>
+
+
+    <h2>Interaction Tracker</h2>
+    <ul id="interactionList"></ul>
+    <script>
+        // Function to get query parameter by name
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Load client data on page load
+        window.onload = function() {
+            const clientId = getQueryParam('id');
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const client = clients.find(c => c.id === clientId);
+    
+            if (client) {
+                if (client.firstName) {
+                    document.getElementById('firstName').value = client.firstName;
+                    document.getElementById('lastName').value = client.lastName;
+                    document.getElementById('phoneNumber').value = client.phoneNumber;
+                    document.getElementById('streetAddress').value = client.streetAddress;
+                    document.getElementById('city').value = client.city;
+                    document.getElementById('state').value = client.state;
+                    document.getElementById('zipCode').value = client.zipCode;
+                    document.getElementById('county').value = client.county;
+                } else if (client.callLogs && client.callLogs.length > 0) {
+                    const latestCall = client.callLogs[client.callLogs.length - 1];
+                    if (latestCall.reasonForCall === 'To Apply Myself for Public Benefits') {
+                        document.getElementById('firstName').value = latestCall.callerFirstName;
+                        document.getElementById('lastName').value = latestCall.callerLastName;
+                        document.getElementById('phoneNumber').value = latestCall.callerPhoneNumber;
+                    }
+                }
+    
+                const interactionList = document.getElementById('interactionList');
+                interactionList.innerHTML = '';
+                if (client.callLogs) {
+                    client.callLogs.forEach(log => {
+                        if (log) {
+                            const li = document.createElement('li');
+                            li.textContent = `${log.agent || ''} - ${log.timestamp || ''} - ${log.callerFirstName || ''} ${log.callerLastName || ''} - ${log.callerPhoneNumber || ''} - ${log.callDirection || ''} - ${log.reasonForCall || ''} - ${log.referralSource || ''}`;
+                            interactionList.appendChild(li);
+                        }
+                    });
+                }
+            } else {
+                alert('Client not found');
+            }
+        }
+
+        // Save client data
+        function saveClient() {
+            const clientId = getQueryParam('id');
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const clientIndex = clients.findIndex(c => c.id === clientId);
+
+            if (clientIndex !== -1) {
+                clients[clientIndex] = {
+                    id: clientId,
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    streetAddress: document.getElementById('streetAddress').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    zipCode: document.getElementById('zipCode').value,
+                    county: document.getElementById('county').value,
+                    callLogs: clients[clientIndex].callLogs || []
+                };
+                localStorage.setItem('clients', JSON.stringify(clients));
+                window.location.href = 'profileview.html?id=' + clientId;
+            } else {
+                alert('Client not found');
+            }
+        }
+
+        // Start screening
+        function startScreening() {
+            alert('Are you sure you want to start a new screening? This action cannot be undone.')
+            saveClient();
+            const clientId = getQueryParam('id');
+            window.location.href = 'householdedit.html?id=' + clientId;
+        }
+
+        // Terminate client profile
+        function terminateClient() {
+            if (confirm('Are you sure you want to terminate this client? This action cannot be undone.')) {
+                const clientId = getQueryParam('id');
+                let clients = JSON.parse(localStorage.getItem('clients')) || [];
+                const clientIndex = clients.findIndex(c => c.id === clientId);
+
+                if (clientIndex !== -1) {
+                    clients.splice(clientIndex, 1);
+                    localStorage.setItem('clients', JSON.stringify(clients));
+                    window.location.href = 'directory.html';
+                } else {
+                    alert('Client not found');
+                }
+            }
+        }
+
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function GoToHousehold() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `householdview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+     
+    function goToCRview() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `currentenrollmentsview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    function GoToIncome() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `incomeview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToLogging() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to call-loggingreturning.html with clientId: ${clientId}`);
+                window.location.href = `call-loggingreturning.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        document.getElementById('relationships-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `relationshipsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+
+        function goToAssets() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToExpenses() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `expensesview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+    </script>
+    <script src="notes.js"></script>
+</body>
+</html>

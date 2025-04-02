@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Enrollments</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="householdedit.css">
+    <link rel="stylesheet" href="notes.css">
+    <style>
+/* ...existing code... */
+
+.household-member-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    align-items: center; /* Center the content horizontally */
+}
+
+.household-member {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 80%; /* Adjust the width as needed */
+    align-items: center; /* Center the content horizontally */
+}
+
+.selection-box {
+    margin-top: 10px;
+    text-align: center; /* Center the text inside the selection box */
+}
+
+.selection-option {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.selection-option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.readonly {
+            pointer-events: none;
+            user-select: none;
+        }
+        .readonly input,
+        .readonly select,
+        .readonly button,
+        .readonly div[data-value] {
+            pointer-events: none;
+            user-select: none;
+            background-color: #f0f0f0; /* Visually indicate read-only fields */
+            color: #a0a0a0; /* Optional: to visually indicate read-only text */
+        }
+        .readonly div[data-value].selected {
+            background-color: #d0d0d0; /* Highlight selected options */
+            color: #000; /* Optional: to visually indicate selected text */
+        }
+        .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .readonly .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+        .interactive2 {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        body {
+    max-width: 1200px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#notes-list {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+}
+
+#note-input {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+}
+/* ...existing code... */
+        
+    </style>
+</head>
+<body class="readonly">
+    <div class="button-container">
+        <button onclick="window.location.href='home.html'" class="interactive">Home</button>
+        <button id="profile-view-button" class="interactive" onclick="GoToProfile()">Profile</button>
+        <button id="household-view-button" class="interactive" onclick="GoToHousehold()">Household</button>
+        <button id="current-enrollments-view-button" class="interactive" onclick="goToRelationships()">Relationships</button>
+        <button id="income-view-button" class="interactive" onclick="GoToIncome()">Income</button>
+        <button id="assets-view-button" class="interactive" onclick="goToAssets()">Assets</button>
+        <button id="expenses-view-button" class="interactive" onclick="goToExpenses()">Expenses</button>
+        <button onclick="window.location.href='directory.html'" class="interactive">Directory</button>
+    </div>
+    <h1>Current Enrollments</h1>
+    <div id="notes-list"></div>
+    <textarea class="interactive2" id="note-input" placeholder="Write your note here..."></textarea>
+    <button class="interactive" id="save-note">Save</button>
+    
+    <div style="display: none" selection-box">
+        <label for="household-size">How many people reside in the household?</label>
+        <select type="hidden" id="household-size">
+            <option value="" disabled selected>Select household size</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+        </select>
+    </div>
+
+    <div id="householdMemberContainer" class="household-member-container"></div>
+
+    <div id="householdMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeHouseholdMemberModal">&times;</span>
+            <h2 id="householdMemberModalTitle">Add Household Member</h2>
+            <form id="householdMemberForm">
+                <input type="hidden" id="householdMemberId">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName"><br><br>
+                <label for="middleInitial">Middle Initial:</label>
+                <input type="text" id="middleInitial" name="middleInitial"><br><br>
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName"><br><br>
+                <div class="selection-box">
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" class="selection-box-input"><br><br>
+                </div>
+                <input type="hidden" id="clientId" name="clientId" value="">
+                <input type="hidden" id="householdMemberId" name="householdMemberId" value="">
+                <button type="submit" id="save-update" style="display: none;">Save and Update</button>
+                <button type="button" id="delete-member" style="display: none;">Delete Household Member</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="button-container">
+        <button id="save-exit" onclick="redirectToRelationshipsView()">Save and Release Profile</button>
+        <button id="save-continue" onclick="gotoCurrentEnrollments()">Save and Continue</button> <br>
+    </div>
+
+    <script src="currentenrollments.js"></script>
+    <script>
+        // Function to get query parameter by name
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Function to save data to the correct client ID in the clients array
+        function saveData() {
+            const clientId = getQueryParameter('id');
+            if (!clientId) {
+                console.error('Client ID not found in query parameters.');
+                return;
+            }
+
+            const clients = JSON.parse(localStorage.getItem('clients')) || {};
+            const clientData = clients[clientId] || {};
+
+            const formData = new FormData(document.getElementById('householdMemberForm'));
+            formData.forEach((value, key) => {
+                clientData[key] = value;
+            });
+
+            clients[clientId] = clientData;
+            localStorage.setItem('clients', JSON.stringify(clients));
+
+            console.log('Data saved successfully:', clientData);
+        }
+
+        // Function to load data from the correct client ID in the clients array
+        function loadData() {
+            const clientId = getQueryParameter('id');
+            if (!clientId) {
+                console.error('Client ID not found in query parameters.');
+                return;
+            }
+
+            const clients = JSON.parse(localStorage.getItem('clients')) || {};
+            const clientData = clients[clientId] || {};
+
+            const form = document.getElementById('householdMemberForm');
+            for (const key in clientData) {
+                if (clientData.hasOwnProperty(key)) {
+                    const element = form.elements[key];
+                    if (element) {
+                        element.value = clientData[key];
+                    }
+                }
+            }
+
+            console.log('Data loaded successfully:', clientData);
+        }
+
+        // Add event listeners to form elements
+        document.querySelectorAll('#householdMemberForm input, #householdMemberForm select').forEach(element => {
+            element.addEventListener('change', saveData);
+        });
+
+        // Load data on page load
+        window.addEventListener('load', loadData);
+
+        
+
+        function redirectToRelationshipsView() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to relationshipsview.html with clientId: ${clientId}`);
+                window.location.href = `relationshipsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        const householdMemberContainer = document.getElementById('householdMemberContainer');
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+                    console.log('Household member container was cleared:', mutation);
+                }
+            });
+        });
+
+        observer.observe(householdMemberContainer, { childList: true });
+
+        function GoToIncome() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `incomeview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToRelationships() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `relationshipsview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    function GoToProfile() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `profileview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    function GoToHousehold() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `householdview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+    function goToAssets() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+        function goToExpenses() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `expensesview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+    </script>
+    <script src="notes.js"></script>
+</body>
+</html>

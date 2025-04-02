@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="householdedit.css">
+    <link rel="stylesheet" href="notes.css">
+    <style>
+
+        .utility-expenses-container {
+    border: 1px solid #ffffff;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #f9f9f9; /* Matches the background color of other containers */
+    width: 100%; /* Ensures consistent width */
+    box-sizing: border-box; /* Includes padding and border in the width */
+}
+
+        .selection-option {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.selection-option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+        .grayed-out {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            z-index: 1001;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .household-member-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .household-member {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            width: 80%;
+            align-items: center;
+        }
+
+        .expense {
+            display: flex;
+            flex-direction: row;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .expense-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        #expenseForm button {
+            margin-right: 0;
+        }
+
+        .expense-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0;
+        }
+
+        .expense-buttons button {
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .expense-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .selection-box {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .selection-option {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .selection-option.selected {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #modalOverlay {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #expenseForm {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        #expenseForm label {
+            flex: 1 1 100px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        #expenseForm select,
+        #expenseForm input {
+            flex: 2 1 200px;
+        }
+
+        #expenseForm button {
+            flex: 1 1 100%;
+            margin-top: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            z-index: 999;
+        }
+
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #save-exit, #save-continue {
+            display: inline-block;
+        }
+
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .readonly {
+            pointer-events: none;
+            user-select: none;
+        }
+        .readonly input,
+        .readonly select,
+        .readonly button,
+        .readonly div[data-value] {
+            pointer-events: none;
+            user-select: none;
+            background-color: #f0f0f0; /* Visually indicate read-only fields */
+            color: #a0a0a0; /* Optional: to visually indicate read-only text */
+        }
+        .readonly div[data-value].selected {
+            background-color: #d0d0d0; /* Highlight selected options */
+            color: #000; /* Optional: to visually indicate selected text */
+        }
+        .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .readonly .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .interactive2 {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+
+    </style>
+</head>
+<body class="readonly">
+    <div class="button-container">
+        <button onclick="window.location.href='home.html'" class="interactive">Home</button>
+        <button id="profile-view-button" class="interactive">Profile</button>
+        <button id="household-view-button" class="interactive" onclick="GoToHousehold()">Household</button>
+        <button id="relationships-view-button" class="interactive">Relationships</button>
+        <button id="current-enrollments-view-button" onclick="goToCRview()" class="interactive">Current Enrollments</button>
+        <button id="income-view-button" class="interactive" onclick="GoToIncome()">Income</button>
+        <button id="assets-view-button" onclick="goToAssets()" class="interactive">Assets</button>
+        <button onclick="window.location.href='directory.html'" class="interactive">Directory</button>
+    </div>
+
+    <h1>Expenses</h1>
+    <div id="notes-list"></div>
+    <textarea class="interactive2" id="note-input" placeholder="Write your note here..."></textarea>
+    <button class="interactive" id="save-note">Save</button>
+
+    <div id="householdMemberContainer" class="household-member-container"></div>
+
+    <div id="householdMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeHouseholdMemberModal">&times;</span>
+            <h2 id="householdMemberModalTitle">Add Household Member</h2>
+            <form id="householdMemberForm">
+                <input type="hidden" id="householdMemberId">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName"><br><br>
+                <label for="middleInitial">Middle Initial:</label>
+                <input type="text" id="middleInitial" name="middleInitial"><br><br>
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName"><br><br>
+                <div class="selection-box">
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" class="selection-box-input"><br><br>
+                </div>
+                <button type="submit" id="save-update" style="display: none;">Save and Update</button>
+                <button type="button" id="delete-member" style="display: none;">Delete Household Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shelter Expense Modal -->
+<div id="shelterExpenseModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeShelterExpenseModal">&times;</span>
+        <h2 id="shelterExpenseModalHeader">Add Shelter Expense</h2>
+        <form id="shelterExpenseForm">
+            <div>
+                <label for="shelterExpenseType">Is this individual responsible for monthly shelter expenses</label>
+                <select id="shelterExpenseType">
+                    <option value="" disabled selected>Select Shelter Expense Type</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Mortgage">Mortgage</option>
+                    <option value="Property Taxes">Property Taxes</option>
+                    <option value="Home Insurance">Home Insurance</option>
+                </select>
+            </div>
+            <br><br>
+            <div>
+                <label for="shelterExpenseValue">Shelter Expense Value:</label>
+                <input type="text" id="shelterExpenseValue">
+            </div>
+            <button type="button" id="saveShelterExpenseButton">Save Shelter Expense</button>
+        </form>
+    </div>
+</div>
+
+<!-- Utility Expense Modal -->
+<div id="utilityExpenseModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeUtilityExpenseModal">&times;</span>
+        <h2 id="utilityExpenseModalHeader">Add Utility Expenses</h2>
+        <form id="utilityExpenseForm">
+            <div class="selection-box">
+                <label id="utilityExpenseType">Which of the following utility expenses is this individual responsible for?</label>
+                <div class="selection-option" id="Gas" data-value="Gas">Gas</div>
+                <div class="selection-option" id="Oil" data-value="Oil">Oil</div>
+                <div class="selection-option" id="Propane" data-value="Propane">Propane</div>
+                <div class="selection-option" id="Wood" data-value="Wood">Wood</div>
+                <div class="selection-option" id="Coal" data-value="Coal">Coal</div>
+                <div class="selection-option" id="Electric" data-value="Electric">Electric</div>
+                <div class="selection-option" id="Phone" data-value="Phone">Phone</div>
+                <div class="selection-option" id="Water" data-value="Water">Water</div>
+                <div class="selection-option" id="Sewage" data-value="Sewage">Sewage</div>
+                <div class="selection-option" id="Garbage" data-value="Garbage">Garbage</div>
+            </div>
+            <br><br>
+            <button type="button" id="saveUtilityExpenseButton">Save Utility Expenses</button>
+        </form>
+    </div>
+</div>
+
+<!-- Medical Expense Modal -->
+<div id="medicalExpenseModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeMedicalExpenseModal">&times;</span>
+        <h2 id="medicalExpenseModalHeader">Add Medical Expense</h2>
+        <form id="medicalExpenseForm">
+            <div>
+                <label for="medicalExpenseType">In the last 90 days, has this individual paid out of pocket for any of the following medical expenses?</label>
+                <select id="medicalExpenseType">
+                    <option value="" disabled selected>Select Medical Expense Type</option>
+                    <option value="Medicare Part B Premium">Medicare Part B Premium</option>
+                    <option value="Medicare Part D Premium">Medicare Part D Premium</option>
+                    <option value="Other Insurance Premium">Other Insurance Premium</option>
+                    <option value="Hospital Copay" >Hospital Copay</option>
+                    <option value="Doctor Copay">Doctor Copay</option>
+                    <option value="Prescription Medication">Prescription Medication</option>
+                    <option value="Over-the-Counter Medication">Over-the-Counter Medication</option>
+                    <option value="Dental Visits">Dental Visits</option>
+                    <option value="Eye Exams">Eye Exams</option>
+                    <option value="Medical Supplies">Medical Supplies</option>
+                    <option value="Medical Equipment">Medical Equipment</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Home Health Aide">Home Health Aide</option>
+                    <option value="Service Animal">Service Animal</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <br><br>
+            <div>
+                <label for="medicalExpenseValue">Medical Expense Value:</label>
+                <input type="text" id="medicalExpenseValue">
+            </div>
+            <button type="button" id="saveMedicalExpenseButton">Save Medical Expense</button>
+        </form>
+    </div>
+</div>
+
+<!-- Other Expense Modal -->
+<div id="otherExpenseModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeOtherExpenseModal">&times;</span>
+        <h2 id="otherExpenseModalHeader">Add Other Expense</h2>
+        <form id="otherExpenseForm">
+            <div>
+                <label for="otherExpenseType">Is this individual responsible for any other countable expenses?</label>
+                <select id="otherExpenseType">
+                    <option value="" disabled selected>Select Other Expense Type</option>
+                    <option value="Child Care">Child or Dependent Care for Work or Training</option>
+                    <option value="Child Support">Court-ordered Child Support Payments</option>
+                    <option value="Alimony">Court-ordered Alimony Payments</option>
+                </select>
+            </div>
+            <br><br>
+            <div>
+                <label for="otherExpenseValue">Other Expense Value:</label>
+                <input type="text" id="otherExpenseValue">
+            </div>
+            <button type="button" id="saveOtherExpenseButton">Save Other Expense</button>
+        </form>
+    </div>
+</div>
+
+<!-- Previous Year Expense Modal -->
+<div id="previousYearExpenseModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closePreviousYearExpenseModal">&times;</span>
+        <h2 id="previousYearExpenseModalHeader">Add Previous Year Expense</h2>
+        <form id="previousYearExpenseForm">
+            <div>
+                <label for="previousYearExpenseType">Did this individual pay either Rent or Property Taxes in the previous year?</label>
+                <select id="previousYearExpenseType">
+                    <option value="" disabled selected>Select Previous Year Expense Type</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Property Taxes">Property Taxes</option>
+                </select>
+            </div>
+            <br><br>
+            <div>
+                <label for="previousYearExpenseValue">Previous Year Value:</label>
+                <input type="text" id="previousYearExpenseValue">
+            </div>
+            <button type="button" id="savePreviousYearExpenseButton">Save Previous Year Expense</button>
+        </form>
+    </div>
+</div>
+
+    <div class="button-container">
+        <button id="save-exit" onclick="redirectToExpenses()">Save and Release Profile</button>
+        <button id="save-continue" onclick="saveAndRedirectToNext()">Save and Continue</button>
+    </div>
+
+    <script src="expensesview.js"></script>
+    <script src="notes.js"></script>
+    <script>
+        function saveAndRedirectToNext() {
+            saveData();
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `estimationsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function redirectToExpenses() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `expensesview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function redirectToAssets() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to assetsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+        // ...existing code...
+
+        function GoToIncome() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `incomeview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function GoToHousehold() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to householdview.html with clientId: ${clientId}`);
+                window.location.href = `householdview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToCRview() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `currentenrollmentsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        // Function to go back to the profile view
+        document.getElementById('profile-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `profileview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+        // Function to go back to the household view
+        document.getElementById('household-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `householdview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+        // Function to go back to the relationships view
+        document.getElementById('relationships-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `relationshipsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+        // Function to go back to the current enrollments view
+        document.getElementById('current-enrollments-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `currentenrollmentsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+        // Function to go back to the income view
+        document.getElementById('income-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `incomeview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+
+        function goToAssets() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+        </script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="householdedit.css">
+    <link rel="stylesheet" href="notes.css">
+    <style>
+/* ...existing code... */
+body {
+    max-width: 1200px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#notes-list {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+}
+
+#note-input {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+}
+
+
+.readonly {
+            pointer-events: none;
+            user-select: none;
+        }
+        .readonly input,
+        .readonly select,
+        .readonly button,
+        .readonly div[data-value] {
+            pointer-events: none;
+            user-select: none;
+            background-color: #f0f0f0; /* Visually indicate read-only fields */
+            color: #a0a0a0; /* Optional: to visually indicate read-only text */
+        }
+        .readonly div[data-value].selected {
+            background-color: #d0d0d0; /* Highlight selected options */
+            color: #000; /* Optional: to visually indicate selected text */
+        }
+        .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .readonly .interactive {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #007bff;
+            color: white;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+
+.household-member-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    align-items: center; /* Center the content horizontally */
+}
+
+.household-member {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 80%; /* Adjust the width as needed */
+    align-items: center; /* Center the content horizontally */
+}
+
+.selection-box {
+    margin-top: 10px;
+    text-align: center; /* Center the text inside the selection box */
+}
+
+.selection-option {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.selection-option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Add styles for the income modal */
+#incomeModal {
+    display: none;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 80%;
+    margin: 0 auto;
+}
+
+#incomeForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+#incomeForm label {
+    flex: 1 1 100px;
+    text-align: right;
+    margin-right: 10px;
+}
+
+#incomeForm select,
+#incomeForm input {
+    flex: 2 1 200px;
+}
+
+#incomeForm button {
+    flex: 1 1 100%;
+    margin-top: 20px;
+}
+
+    </style>
+    <style>
+/* ...existing code... */
+.household-member-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    align-items: center; /* Center the content horizontally */
+}
+
+.household-member {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 80%; /* Adjust the width as needed */
+    align-items: center; /* Center the content horizontally */
+}
+
+.selection-box {
+    margin-top: 10px;
+    text-align: center; /* Center the text inside the selection box */
+}
+
+.selection-option {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.selection-option.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#householdMemberModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    display: none;
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    z-index: 1002; /* Ensure buttons are above the modal */
+}
+
+.button-container button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#save-exit, #save-continue {
+    display: inline-block;
+}
+.interactive2 {
+            pointer-events: auto;
+            user-select: auto;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+
+
+/* ...existing code... */
+        
+    </style>
+</head>
+<body class="readonly">
+    <div class="button-container">
+        <button onclick="window.location.href='home.html'" class="interactive">Home</button>
+        <button id="profile-view-button" class="interactive">Profile</button>
+        <button id="household-view-button" class="interactive" onclick="GoToHousehold()">Household</button>
+        <button id="relationships-view-button" class="interactive">Relationships</button>
+        <button id="current-enrollments-view-button" onclick="goToCRview()" class="interactive">Current Enrollments</button>
+        <button id="assets-view-button" onclick="goToAssets()" class="interactive">Assets</button>
+        <button id="expenses-view-button" onclick="goToExpenses()" class="interactive">Expenses</button>
+        <button onclick="window.location.href='directory.html'" class="interactive">Directory</button>
+    </div>
+    <h1>Income</h1>
+    <div id="notes-list"></div>
+    <textarea class="interactive2" id="note-input" placeholder="Write your note here..."></textarea>
+    <button class="interactive" id="save-note">Save</button>
+  
+    
+    <div style="display: none" selection-box">
+        <label for="household-size">How many people reside in the household?</label>
+        <select type="hidden" id="household-size">
+            <option value="" disabled selected>Select household size</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+        </select>
+    </div>
+
+    <div id="householdMemberContainer" class="household-member-container"></div>
+
+    <div id="householdMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeHouseholdMemberModal">&times;</span>
+            <h2 id="householdMemberModalTitle">Add Household Member</h2>
+            <form id="householdMemberForm">
+                <input type="hidden" id="householdMemberId">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName"><br><br>
+                <label for="middleInitial">Middle Initial:</label>
+                <input type="text" id="middleInitial" name="middleInitial"><br><br>
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName"><br><br>
+                <div class="selection-box">
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" class="selection-box-input"><br><br>
+                </div>
+                <div class="selection-box">
+                    <label for="maritalStatus">Marital Status:</label>
+                    <select id="maritalStatus" name="maritalStatus" class="selection-box-input">
+                        <option value="Single">Single</option>
+                        <option value="Married (Living Together)">Married (Living Together)</option>
+                        <option value="Married (Living Separately)">Married (Living Separately)</option>
+                        <option value="Divorced">Divorced</option>
+                        <option value="Widowed">Widowed</option>
+                    </select><br><br>
+                </div>
+                <div id="disabilityQuestion" class="selection-box" style="display: none;">
+                    <label>Is this individual on disability?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="medicareQuestion" class="selection-box">
+                    <label>Is this individual on Medicare?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="medicaidQuestion" class="selection-box">
+                    <label>Is this individual on Medicaid?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="studentQuestion" class="selection-box">
+                    <label>Is this individual a student?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="mealsQuestion" class="selection-box">
+                    <label>Does this person share meals?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <input type="hidden" id="clientId" name="clientId" value="">
+                <input type="hidden" id="householdMemberId" name="householdMemberId" value="">
+                <button type="submit" id="save-update" style="display: none;">Save and Update</button>
+                <button type="button" id="delete-member" style="display: none;">Delete Household Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add this HTML to your document -->
+    <div id="incomeModal">
+        <div class="modal-content">
+            <span class="close" id="closeIncomeModal">&times;</span>
+            <form id="incomeForm">
+            <label for="incomeKind">Income Type:</label>
+            <select id="incomeKind" required>
+                <option value="" disabled selected>Select Income Type</option>
+                <option value="SSA Retirement">SSA Retirement</option>
+                <option value="Railroad Retirement">Railroad Retirement</option>
+                <option value="SSDI">SSDI</option>
+                <option value="SSI">SSI</option>
+                <option value="VA Benefits">VA Benefits</option>
+                <option value="Employment">Employment</option>
+                <option value="Self-Employment">Self-Employment</option>
+                <option value="Unemployment">Unemployment Compensation</option>
+                <option value="401k Distributions">401k Distributions</option>
+                <option value="Pensions">Pensions</option>
+                <option value="Annuities">Annuities</option>
+                <option value="Dividends">Dividends</option>
+                <option value="Interest">Interest</option>
+                <option value="Child Support">Child Support</option>
+                <option value="Alimony">Alimony</option>
+                <option value="Rental Income">Rental Income</option>
+                <option value="Trust Income">Trust Income</option>
+                <!-- Add more options as needed -->
+            </select>
+            <label for="incomeStartDate">Start Date:</label>
+            <input type="date" id="incomeStartDate" required>
+            <label for="incomeEndDate">End Date:</label>
+            <input type="date" id="incomeEndDate" required>
+            <label for="incomeFrequency">Frequency:</label>
+            <select id="incomeFrequency" required>
+                <option value="" disabled selected>Select Frequency</option>
+                <option value="One-Time">One-Time</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Biweekly">Biweekly</option>
+                <option value="Bimonthly">Bimonthly</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Yearly">Yearly</option>
+                <!-- Add more options as needed -->
+            </select>
+            <label for="incomeAmount">Amount:</label>
+            <input type="number" id="incomeAmount" required>
+            <button type="submit">Save Income</button>
+        </form>
+    </div>
+</div>
+
+    <script src="income.js"></script>
+    <script>
+        // Function to get query parameter by name
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Function to save data to the correct client ID in the clients array
+        function saveData() {
+            const clientId = getQueryParameter('id');
+            if (!clientId) {
+                console.error('Client ID not found in query parameters.');
+                return;
+            }
+
+            const clients = JSON.parse(localStorage.getItem('clients')) || {};
+            const clientData = clients[clientId] || {};
+
+            const formData = new FormData(document.getElementById('householdMemberForm'));
+            formData.forEach((value, key) => {
+                clientData[key] = value;
+            });
+
+            clients[clientId] = clientData;
+            localStorage.setItem('clients', JSON.stringify(clients));
+
+            console.log('Data saved successfully:', clientData);
+        }
+
+        // Function to load data from the correct client ID in the clients array
+        function loadData() {
+            const clientId = getQueryParameter('id');
+            if (!clientId) {
+                console.error('Client ID not found in query parameters.');
+                return;
+            }
+
+            const clients = JSON.parse(localStorage.getItem('clients')) || {};
+            const clientData = clients[clientId] || {};
+
+            const form = document.getElementById('householdMemberForm');
+            for (const key in clientData) {
+                if (clientData.hasOwnProperty(key)) {
+                    const element = form.elements[key];
+                    if (element) {
+                        element.value = clientData[key];
+                    }
+                }
+            }
+
+            console.log('Data loaded successfully:', clientData);
+        }
+
+        // Add event listeners to form elements
+        document.querySelectorAll('#householdMemberForm input, #householdMemberForm select').forEach(element => {
+            element.addEventListener('change', saveData);
+        });
+
+        // Load data on page load
+        window.addEventListener('load', loadData);
+
+        
+
+        function redirectToRelationshipsView() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to relationshipsview.html with clientId: ${clientId}`);
+                window.location.href = `relationshipsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        const householdMemberContainer = document.getElementById('householdMemberContainer');
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+                    console.log('Household member container was cleared:', mutation);
+                }
+            });
+        });
+
+        observer.observe(householdMemberContainer, { childList: true });
+
+        function gotoCurrentEnrollments() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `currentenrollmentsedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    // Function to save data and redirect to another page
+    function saveAndRedirect(url) {
+        saveData(); // Save the data
+        window.location.href = url; // Redirect to the specified URL
+    }
+    </script>
+    <script>
+        // ...existing code...
+        
+        // Function to close the income modal
+        document.getElementById('closeIncomeModal').addEventListener('click', function() {
+            document.getElementById('incomeModal').style.display = 'none';
+        });
+        
+        // Function to close the household member modal
+        document.getElementById('closeHouseholdMemberModal').addEventListener('click', function() {
+            document.getElementById('householdMemberModal').style.display = 'none';
+        });
+        
+
+        function redirecttoIncome() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `incomeview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToCRview() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `currentenrollmentsview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    // Redirect to profile view page
+    document.getElementById('profile-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `profileview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        document.getElementById('relationships-view-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `relationshipsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });        
+
+
+        function GoToHousehold() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `householdview.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    function goToAssets() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToExpenses() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `expensesview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        // ...existing code...
+    </script>
+    <script src="notes.js"></script>   
+
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Household Information</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="householdedit.css">
+    <link rel="stylesheet" href="notes.css">
+    <style>
+body {
+    max-width: 1200px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#notes-list {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+}
+
+#note-input {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin: 0 auto;
+}
+        
+    </style>
+</head>
+<body>
+    <h1>Household Information</h1>
+    <div id="notes-list"></div>
+    <textarea id="note-input" placeholder="Write your note here..."></textarea>
+    <button id="save-note">Save</button>
+    
+    <div class="selection-box">
+        <label for="household-size">How many people reside in the household?</label>
+        <select id="household-size">
+            <option value="" disabled selected>Select household size</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+        </select>
+    </div>
+
+    <div class="selection-box">
+        <label id="disability-label">Is anyone in the household currently receiving disability benefits?</label>
+        <div id="disability-yes" data-value="yes">Yes</div>
+        <div id="disability-no" data-value="no">No</div>
+    </div>
+    
+    <div class="selection-box">
+        <label id="medicare-label">Is anyone in the household currently enrolled in Medicare?</label>
+        <div id="medicare-yes" data-value="yes">Yes</div>
+        <div id="medicare-no" data-value="no">No</div>
+    </div>
+
+    <div class="selection-box">
+        <label id="medicaid-label">Is anyone in the household currently enrolled in Medicaid?</label>
+        <div id="medicaid-yes" data-value="yes">Yes</div>
+        <div id="medicaid-no" data-value="no">No</div>
+    </div>
+
+    <div class="selection-box">
+        <label id="student-label">Is anyone in the household currently a student?</label>
+        <div id="student-yes" data-value="yes">Yes</div>
+        <div id="student-no" data-value="no">No</div>
+    </div>
+
+    <div class="selection-box">
+        <label id="residence-label">What was your residence status during the previous year?</label>
+        <div id="residence-owned" data-value="owned">Owned Home</div>
+        <div id="residence-rented" data-value="rented">Rented with Formal Lease</div>
+        <div id="residence-rentedinformal" data-value="rentedinformal">Owned/Rented</div>
+        <div id="residence-other" data-value="other">Other/No Formal Agreement</div>
+    </div>
+
+    <div class="selection-box">
+        <label id="snap-label">Is everyone in the household currently enrolled in SNAP?</label>
+        <div id="snap-yes" data-value="yes">Yes</div>
+        <div id="snap-no" data-value="no">No</div>
+        <div id="snap-notinterested" data-value="notinterested">Not Interested</div>
+    </div>
+
+    <div class="button-container">
+        <button id="add-household-member">Add Household Member</button>
+        <button id="save-exit" onclick="redirectToHouseholdView()">Save and Release Profile</button>
+        <button id="save-continue">Save and Continue</button> <br>
+    </div>
+
+    <div id="householdMemberContainer" class="household-member-container"></div>
+
+    <div id="householdMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeHouseholdMemberModal">&times;</span>
+            <h2 id="householdMemberModalTitle">Add Household Member</h2>
+            <form id="householdMemberForm">
+                <input type="hidden" id="householdMemberId">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName"><br><br>
+                <label for="middleInitial">Middle Initial:</label>
+                <input type="text" id="middleInitial" name="middleInitial"><br><br>
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName"><br><br>
+                <div class="selection-box">
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" class="selection-box-input"><br><br>
+                </div>
+                <div class="selection-box">
+                    <label for="maritalStatus">Marital Status:</label>
+                    <select id="maritalStatus" name="maritalStatus" class="selection-box-input">
+                        <option value="Single">Single</option>
+                        <option value="Married (Living Together)">Married (Living Together)</option>
+                        <option value="Married (Living Separately)">Married (Living Separately)</option>
+                        <option value="Divorced">Divorced</option>
+                        <option value="Widowed">Widowed</option>
+                    </select><br><br>
+                </div>
+                <div id="disabilityQuestion" class="selection-box" style="display: none;">
+                    <label>Is this individual on disability?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="medicareQuestion" class="selection-box">
+                    <label>Is this individual on Medicare (or will they be within the next three months)?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="medicaidQuestion" class="selection-box">
+                    <label>Is this individual on Medicaid?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <div id="studentQuestion" class="selection-box">
+                    <label>Is this individual a student?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No or Less than Full-Time</div>
+                </div>
+                <div id="mealsQuestion" class="selection-box">
+                    <label>Does this person share meals?</label>
+                    <div data-value="yes">Yes</div>
+                    <div data-value="no">No</div>
+                </div>
+                <input type="hidden" id="clientId" name="clientId" value="">
+                <input type="hidden" id="householdMemberId" name="householdMemberId" value="">
+                <button type="submit" id="add-member">Add Member</button>
+                <button type="submit" id="save-update" style="display: none;">Save and Update</button>
+                <button type="button" id="delete-member" style="display: none;">Delete Household Member</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="householdedit.js"></script>
+    <script>
+        // Function to get query parameter by name
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+    
+        // Redirect to relationships.html with the specific client ID
+        document.getElementById('save-continue').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `relationshipsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+    
+        document.getElementById('disability-yes').addEventListener('click', function() {
+            document.getElementById('disabilityQuestion').style.display = 'block';
+        });
+    
+        document.getElementById('disability-no').addEventListener('click', function() {
+            document.getElementById('disabilityQuestion').style.display = 'none';
+        });
+    
+        document.getElementById('medicare-yes').addEventListener('click', function() {
+            document.getElementById('medicareQuestion').style.display = 'block';
+        });
+    
+        document.getElementById('medicare-no').addEventListener('click', function() {
+            document.getElementById('medicareQuestion').style.display = 'none';
+        });
+    
+        document.getElementById('medicaid-yes').addEventListener('click', function() {
+            document.getElementById('medicaidQuestion').style.display = 'block';
+        });
+    
+        document.getElementById('medicaid-no').addEventListener('click', function() {
+            document.getElementById('medicaidQuestion').style.display = 'none';
+        });
+    
+        document.getElementById('student-yes').addEventListener('click', function() {
+            document.getElementById('studentQuestion').style.display = 'block';
+        });
+    
+        document.getElementById('student-no').addEventListener('click', function() {
+            document.getElementById('studentQuestion').style.display = 'none';
+        });
+    
+        document.getElementById('snap-yes').addEventListener('click', function() {
+            document.getElementById('mealsQuestion').style.display = 'none';
+        });
+    
+        document.getElementById('snap-no').addEventListener('click', function() {
+            document.getElementById('mealsQuestion').style.display = 'block';
+        });
+    
+        document.getElementById('snap-notinterested').addEventListener('click', function() {
+            document.getElementById('mealsQuestion').style.display = 'none';
+        });
+    
+        function redirectToHouseholdView() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to householdview.html with clientId: ${clientId}`);
+                window.location.href = `householdview.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+    
+        const householdMemberContainer = document.getElementById('householdMemberContainer');
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+                    console.log('Household member container was cleared:', mutation);
+                }
+            });
+        });
+    
+        document.querySelectorAll('#residence-owned, #residence-rented, #residence-rentedinformal, #residence-other').forEach(option => {
+            option.addEventListener('click', function() {
+                const clientId = getQueryParameter('id'); // Get the client ID from the query parameters
+                if (!clientId) {
+                    console.error('Client ID not found in query parameters.');
+                    return;
+                }
+    
+                const residenceStatus = this.getAttribute('data-value'); // Get the selected residence status value
+                let clients = JSON.parse(localStorage.getItem('clients')) || []; // Retrieve the clients array from local storage
+    
+                // Find the client by ID or create a new one if not found
+                let client = clients.find(client => client.id === clientId);
+                if (!client) {
+                    client = { id: clientId };
+                    clients.push(client);
+                }
+    
+                // Update the residence status for the client
+                client.residencestatus = residenceStatus;
+    
+                // Save the updated clients array back to local storage
+                localStorage.setItem('clients', JSON.stringify(clients));
+    
+                console.log(`Residence status "${residenceStatus}" saved for client ID: ${clientId}`);
+            });
+        });
+    
+        observer.observe(householdMemberContainer, { childList: true });
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            const clientId = getQueryParameter('id'); // Get the client ID from the query parameters
+            if (!clientId) {
+                console.error('Client ID not found in query parameters.');
+                return;
+            }
+    
+            let clients = JSON.parse(localStorage.getItem('clients')) || []; // Retrieve the clients array from local storage
+            const client = clients.find(client => client.id === clientId); // Find the client by ID
+    
+            if (client && client.residencestatus) {
+                // Find the element corresponding to the saved residence status
+                const savedOption = document.querySelector(`[data-value="${client.residencestatus}"]`);
+                if (savedOption) {
+                    savedOption.click(); // Simulate a click on the saved option
+                    console.log(`Simulated click for residence status: "${client.residencestatus}"`);
+                } else {
+                    console.warn(`No matching element found for residence status: "${client.residencestatus}"`);
+                }
+            }
+        });
+
+        document.querySelector('#residence-other').addEventListener('click', function () {
+    const clientId = getQueryParameter('id'); // Get the client ID from the query parameters
+    if (!clientId) {
+        console.error('Client ID not found in query parameters.');
+        return;
+    }
+
+    const residenceStatus = this.getAttribute('data-value'); // Get the selected residence status value
+    let clients = JSON.parse(localStorage.getItem('clients')) || []; // Retrieve the clients array from local storage
+
+    // Find the client by ID or create a new one if not found
+    let client = clients.find(client => client.id === clientId);
+    if (!client) {
+        client = { id: clientId, householdMembers: [] }; // Initialize householdMembers if not present
+        clients.push(client);
+    }
+
+    // Update the residence status for the client
+    client.residencestatus = residenceStatus;
+
+    // If residence status is "other," update PTTR for all household members
+    if (residenceStatus === "other" && client.householdMembers) {
+        client.householdMembers.forEach(member => {
+            member['Has this person already applied for PTTR this year?'] = 'notinterested';
+        });
+    }
+
+    // Save the updated clients array back to local storage
+    localStorage.setItem('clients', JSON.stringify(clients));
+
+    console.log(`Residence status "${residenceStatus}" saved for client ID: ${clientId}`);
+    console.log('Updated household members:', client.householdMembers);
+
+    // Optionally refresh the UI to reflect the changes
+    refreshHouseholdMembersUI();
+});
+
+
+    </script>
+    <script src="notes.js"></script>
+</body>
+</html>

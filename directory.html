@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Clients</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Search Clients</h1>
+    <input type="text" id="searchFirstName" onkeyup="searchClients()" placeholder="Search by first name..">
+    <input type="text" id="searchLastName" onkeyup="searchClients()" placeholder="Search by last name..">
+    <ul id="clientList"></ul>
+    <button onclick="window.location.href='home.html'">Home</button>
+    <br>
+    <button onclick="saveClientAndLogCall()">Add New Client</button>
+    <script>
+        function searchClients() {
+            const firstNameInput = document.getElementById('searchFirstName').value.toLowerCase();
+            const lastNameInput = document.getElementById('searchLastName').value.toLowerCase();
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const filteredClients = clients.filter(client => 
+                client.firstName.toLowerCase().includes(firstNameInput) && 
+                client.lastName.toLowerCase().includes(lastNameInput)
+            );
+            const clientList = document.getElementById('clientList');
+            clientList.innerHTML = '';
+            filteredClients.forEach((client) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="profileview.html?id=${client.id}">
+                        ${client.firstName} ${client.lastName} | 
+                        Phone: ${client.phoneNumber} | 
+                        Address: ${client.streetAddress}, ${client.city}, ${client.state}, ${client.zipCode}, ${client.county}
+                    </a>`;
+                clientList.appendChild(li);
+            });
+        }
+
+        function cleanUpClients() {
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients = clients.filter(client => client.id !== undefined);
+            localStorage.setItem('clients', JSON.stringify(clients));
+        }
+
+        // Load all clients on page load
+        window.onload = function() {
+            cleanUpClients();
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const clientList = document.getElementById('clientList');
+            clientList.innerHTML = '';
+            clients.forEach((client) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="profileview.html?id=${client.id}">
+                        ${client.firstName} ${client.lastName} | 
+                        Phone: ${client.phoneNumber} | 
+                        Address: ${client.streetAddress}, ${client.city}, ${client.state}, ${client.zipCode}, ${client.county}
+                    </a>`;
+                clientList.appendChild(li);
+            });
+        }
+
+        function saveClientAndLogCall() {
+            // Save client data to local storage
+            const client = {
+                id: generateUniqueId(),
+            };
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.push(client);
+            localStorage.setItem('clients', JSON.stringify(clients));
+            window.location.href = `call-logging.html?id=${client.id}`;
+        }
+
+        function generateUniqueId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+    </script>
+</body>
+</html>

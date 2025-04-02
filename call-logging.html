@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Logging</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Add New Contact</h1>
+    <form id="callLogForm">
+        <label for="Agent">Contact Center Specialist:</label>
+        <input type="text" id="Agent" name="Agent" readonly><br><br>
+
+        <label for="callerFirstName">Contact First Name:</label>
+        <input type="text" id="callerFirstName" name="callerFirstName" required><br><br>
+        <label for="callerLastName">Contact Last Name:</label>
+        <input type="text" id="callerLastName" name="callerLastName" required><br><br>
+        <label for="callerPhoneNumber">Contact Phone Number:</label>
+        <input type="text" id="callerPhoneNumber" name="callerPhoneNumber" required><br><br>
+        <label for="callDirection">Call Direction:</label>
+        <select id="callDirection" name="callDirection" required>
+            <option value disabled selected>Select Call Direction</option>
+            <option value="Inbound">Inbound</option>
+            <option value="Outbound">Outbound</option>
+        </select><br><br>
+
+        <label for="reasonForCall">Reason for Call:</label>
+        <select id="reasonForCall" name="reasonForCall" required>
+            <option value disabled selected>Select Reason for Call</option>
+            <option value="To Apply Myself for Public Benefits">To Apply Myself for Public Benefits</option>
+            <option value="To Apply Someone Else for Public Benefits">To Apply Someone Else for Public Benefits</option>
+            <option value="To Recertify SNAP and/or Medical Assistance">To Recertify SNAP </option>
+            <option value="CAP Outreach">CAP Outreach Initiative</option>
+            <option value="Questions about an Existing Case">Questions about an Existing Case</option>
+            <option value="Post-Submission Questions">Post-Submission Questions</option>
+            <option value="Other">Another Reason</option>
+        </select><br><br>
+
+        <div id="referralSourceContainer">
+            <label for="referralSource">Referral Source:</label>
+            <select id="referralSource" name="referralSource">
+                <option value disabled selected>Select Referral Source</option>
+                <option value="Outreach">Outreach</option>
+                <option value="Referral from a Government Agency">Referral from a Government Agency</option>
+                <option value="Referral from a CBO">Referral from a Community-Based Organization</option>
+                <option value="Community Referral">Community Referral</option>
+                <option value="Internet Search">Internet Search</option>
+            </select><br><br>
+        </div>
+
+        <button type="button" onclick="window.location.href='home.html'"> Home</button>
+        <button type="button" onclick="logNewCall()">Log New Call</button>
+    </form>
+    <script>
+        // Function to get query parameter by name
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function goBackToProfile() {
+            const clientId = getQueryParam('id');
+            window.location.href = `profileview.html?id=${clientId}`;
+        }
+
+        function logNewCall() {
+            const requiredFields = ['callerFirstName', 'callerLastName', 'callerPhoneNumber', 'callDirection', 'reasonForCall'];
+            for (const field of requiredFields) {
+                if (!document.getElementById(field).value) {
+                    alert('Please fill out all required fields.');
+                    return;
+                }
+            }
+
+            const referralSourceContainer = document.getElementById('referralSourceContainer');
+            if (referralSourceContainer.style.display !== 'none' && !document.getElementById('referralSource').value) {
+                alert('Please fill out all required fields.');
+                return;
+            }
+
+            const clientId = getQueryParam('id');
+            const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+            const loggedInUsername = accounts.find(acc => acc.isLoggedIn)?.username;
+
+            const callLog = {
+                agent: document.getElementById('Agent').value,
+                callerFirstName: document.getElementById('callerFirstName').value,
+                callerLastName: document.getElementById('callerLastName').value,
+                callerPhoneNumber: document.getElementById('callerPhoneNumber').value,
+                callDirection: document.getElementById('callDirection').value,
+                reasonForCall: document.getElementById('reasonForCall').value,
+                referralSource: document.getElementById('referralSource').value,
+                timestamp: new Date().toLocaleString(),
+                loggedInUsername: loggedInUsername || 'Unknown'
+            };
+
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const clientIndex = clients.findIndex(c => c.id === clientId);
+
+            if (clientIndex !== -1) {
+                if (!clients[clientIndex].callLogs) {
+                    clients[clientIndex].callLogs = [];
+                }
+                clients[clientIndex].callLogs.push(callLog);
+                localStorage.setItem('clients', JSON.stringify(clients));
+                window.location.href = `profileedit.html?id=${clientId}`;
+            } else {
+                alert('Client not found');
+            }
+        }
+
+        function generateUniqueId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function saveClientAndLogCall() {
+            // Save client data to local storage
+            const client = {
+                id: generateUniqueId(),
+                callerFirstName: document.getElementById('callerFirstName').value,
+                callerLastName: document.getElementById('callerLastName').value,
+                callerPhoneNumber: document.getElementById('callerPhoneNumber').value,
+            };
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.push(client);
+            localStorage.setItem('clients', JSON.stringify(clients));
+            window.location.href = `call-logging.html?id=${client.id}`;
+        }
+
+        function populateActiveUser() {
+            const activeUser = sessionStorage.getItem('activeUser');
+            if (activeUser) {
+                let username = activeUser.replace(/['"]+/g, ''); // Remove any quotes
+                username = username.replace('username:', '').trim(); // Remove the word "username" and trim any extra spaces
+                const usernamePart = username.split('@')[0]; // Assuming the username is the part before '@' in an email
+                if (usernamePart !== '') {
+                    document.getElementById('Agent').value = usernamePart;
+                }
+            }
+        }
+
+        function toggleReferralSource() {
+            const callDirection = document.getElementById('callDirection').value;
+            const referralSourceContainer = document.getElementById('referralSourceContainer');
+            if (callDirection === 'Outbound') {
+                referralSourceContainer.style.display = 'none';
+                document.getElementById('referralSource').removeAttribute('required');
+            } else {
+                referralSourceContainer.style.display = 'block';
+                document.getElementById('referralSource').setAttribute('required', 'required');
+            }
+        }
+
+        window.onload = function() {
+            populateActiveUser();
+            document.getElementById('callDirection').addEventListener('change', toggleReferralSource);
+        };
+    </script>
+</body>
+</html>

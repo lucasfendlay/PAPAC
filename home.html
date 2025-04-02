@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Client</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>PACE Application Center</h1>
+    <button onclick="window.location.href='directory.html'">Directory</button>
+    <br>
+    <button onclick="saveClientAndLogCall()">Add New Client</button>
+    <button id="clearLocalStorageButton">Clear Local Storage</button>
+<script>
+    document.getElementById('clearLocalStorageButton').addEventListener('click', function() {
+        localStorage.clear();
+        console.log('Local storage cleared');
+    });
+
+    function saveClientAndLogCall() {
+            // Save client data to local storage
+            const client = {
+                id: generateUniqueId(),
+            };
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.push(client);
+            localStorage.setItem('clients', JSON.stringify(clients));
+            window.location.href = `call-logging.html?id=${client.id}`;
+        }
+
+        function generateUniqueId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+</script>
+
+</body>
+</html>
