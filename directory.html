@@ -19,26 +19,60 @@
     <input type="text" id="searchCity" onkeyup="searchClients()" placeholder="Search by city...">
     <ul id="clientList"></ul>
     <script>
-        const KV_BASE_URL = 'https://<your-REDIS_URL="redis://default:Gn3vQe0LVr5ZwaImofpiueQfFquG8JaP@redis-16284.c322.us-east-1-2.ec2.redns.redis-cloud.com:16284"-kv-url>'; // Replace with your Vercel KV URL
+    (async function copyLocalStorageToKV() {
+        // Replace with your actual Vercel KV URL and token
+        const KV_BASE_URL = 'https://redis://default:Gn3vQe0LVr5ZwaImofpiueQfFquG8JaP@redis-16284.c322.us-east-1-2.ec2.redns.redis-cloud.com:16284"-kv-url>'; // Replace with your Vercel KV URL        const KV_AUTH_HEADER = 'Bearer <your-auth-token>'; // Replace with your Vercel KV token
         const KV_AUTH_HEADER = 'OF10ALh7WYchdPoY4yaitgrk'; // Replace with your Vercel KV token
+        
+        // Fetch data from localStorage
+        const localStorageClients = JSON.parse(localStorage.getItem('clients')) || [];
     
-        async function fetchClients() {
-            const response = await fetch(`${KV_BASE_URL}/clients`, {
-                headers: { Authorization: KV_AUTH_HEADER }
-            });
-            return response.ok ? await response.json() : [];
+        if (localStorageClients.length === 0) {
+            console.log('No clients found in localStorage.');
+            return;
         }
     
-        async function saveClients(clients) {
-            await fetch(`${KV_BASE_URL}/clients`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: KV_AUTH_HEADER
-                },
-                body: JSON.stringify(clients)
-            });
+        console.log('Clients found in localStorage:', localStorageClients);
+    
+        // Function to save clients to Vercel KV
+        async function saveClients(newClients) {
+    // Fetch existing clients from Vercel KV
+    const response = await fetch(`${KV_BASE_URL}/clients`, {
+        headers: {
+            Authorization: KV_AUTH_HEADER
         }
+    });
+
+    let existingClients = [];
+    if (response.ok) {
+        existingClients = await response.json();
+    } else {
+        console.error('Failed to fetch existing clients:', await response.text());
+    }
+
+    // Merge existing clients with new clients
+    const mergedClients = [...existingClients, ...newClients];
+
+    // Save the merged clients back to Vercel KV
+    const saveResponse = await fetch(`${KV_BASE_URL}/clients`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: KV_AUTH_HEADER
+        },
+        body: JSON.stringify(mergedClients)
+    });
+
+    if (saveResponse.ok) {
+        console.log('Clients successfully merged and saved to Vercel KV.');
+    } else {
+        console.error('Failed to save merged clients to Vercel KV:', await saveResponse.text());
+    }
+}
+    
+        // Save localStorage data to Vercel KV
+        await saveClients(localStorageClients);
+    })();
     
         async function searchClients() {
             const firstNameInput = document.getElementById('searchFirstName').value.toLowerCase();
