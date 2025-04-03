@@ -33,7 +33,92 @@
             return '_' + Math.random().toString(36).substr(2, 9);
         }
 </script>
-<script src="server.js"></script>
+
+<script>
+    // Retrieve all localStorage data and merge into a CSV file
+function mergeLocalStorageToCSV() {
+    // Step 1: Retrieve all keys and values from localStorage
+    const keys = Object.keys(localStorage);
+    const data = [];
+
+    keys.forEach((key) => {
+        try {
+            // Parse JSON data if possible
+            const value = JSON.parse(localStorage.getItem(key));
+            data.push({ key, ...value });
+        } catch (e) {
+            // If not JSON, store as a plain string
+            data.push({ key, value: localStorage.getItem(key) });
+        }
+    });
+
+    // Step 2: Convert data to CSV format
+    const csvRows = [];
+    const headers = Object.keys(data[0] || {}); // Get headers from the first object
+    csvRows.push(headers.join(',')); // Add headers row
+
+    data.forEach((row) => {
+        const values = headers.map((header) => `"${row[header] || ''}"`);
+        csvRows.push(values.join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+
+    // Step 3: Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'localStorageData.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// Call the function to merge and download the CSV
+mergeLocalStorageToCSV();
+
+</script>
+<script>
+    window.onload = function () {
+        mergeLocalStorageToCSV();
+    };
+
+    // Paste the mergeLocalStorageToCSV function here
+</script>
+<script>
+    function loadCSVToLocalStorage() {
+        const fileInput = document.getElementById('csvFileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Please select a CSV file.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const csvContent = event.target.result;
+            const rows = csvContent.split('\n').map(row => row.split(','));
+
+            // Extract headers and data
+            const headers = rows[0];
+            const data = rows.slice(1).map(row => {
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header.trim()] = row[index]?.trim();
+                });
+                return obj;
+            });
+
+            // Save data to localStorage
+            localStorage.setItem('clients', JSON.stringify(data));
+            alert('CSV data loaded into localStorage!');
+        };
+
+        reader.readAsText(file);
+    }
+    </script>
 
 </body>
 </html>

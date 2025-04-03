@@ -18,22 +18,44 @@
     <input type="text" id="searchStreetAddress" onkeyup="searchClients()" placeholder="Search by street address...">
     <input type="text" id="searchCity" onkeyup="searchClients()" placeholder="Search by city...">
     <ul id="clientList"></ul>
-    <script src="sharepoint.js"></script>
     <script>
-        function searchClients() {
+        const KV_BASE_URL = 'https://<your-REDIS_URL="redis://default:Gn3vQe0LVr5ZwaImofpiueQfFquG8JaP@redis-16284.c322.us-east-1-2.ec2.redns.redis-cloud.com:16284"-kv-url>'; // Replace with your Vercel KV URL
+        const KV_AUTH_HEADER = 'OF10ALh7WYchdPoY4yaitgrk'; // Replace with your Vercel KV token
+    
+        async function fetchClients() {
+            const response = await fetch(`${KV_BASE_URL}/clients`, {
+                headers: { Authorization: KV_AUTH_HEADER }
+            });
+            return response.ok ? await response.json() : [];
+        }
+    
+        async function saveClients(clients) {
+            await fetch(`${KV_BASE_URL}/clients`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: KV_AUTH_HEADER
+                },
+                body: JSON.stringify(clients)
+            });
+        }
+    
+        async function searchClients() {
             const firstNameInput = document.getElementById('searchFirstName').value.toLowerCase();
             const lastNameInput = document.getElementById('searchLastName').value.toLowerCase();
             const phoneNumberInput = document.getElementById('searchPhoneNumber').value.toLowerCase();
             const streetAddressInput = document.getElementById('searchStreetAddress').value.toLowerCase();
             const cityInput = document.getElementById('searchCity').value.toLowerCase();
-            const clients = JSON.parse(localStorage.getItem('clients')) || [];
-            const filteredClients = clients.filter(client => 
-    client.firstName.toLowerCase().includes(firstNameInput) && 
-    client.lastName.toLowerCase().includes(lastNameInput) &&
-    client.phoneNumber.toLowerCase().includes(phoneNumberInput) &&
-    client.streetAddress.toLowerCase().includes(streetAddressInput) &&
-    client.city.toLowerCase().includes(cityInput)
-);
+    
+            const clients = await fetchClients();
+            const filteredClients = clients.filter(client =>
+                client.firstName.toLowerCase().includes(firstNameInput) &&
+                client.lastName.toLowerCase().includes(lastNameInput) &&
+                client.phoneNumber.toLowerCase().includes(phoneNumberInput) &&
+                client.streetAddress.toLowerCase().includes(streetAddressInput) &&
+                client.city.toLowerCase().includes(cityInput)
+            );
+    
             const clientList = document.getElementById('clientList');
             clientList.innerHTML = '';
             filteredClients.forEach((client) => {
@@ -47,17 +69,41 @@
                 clientList.appendChild(li);
             });
         }
-
-        function cleanUpClients() {
-            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+    
+        async function cleanUpClients() {
+            let clients = await fetchClients();
             clients = clients.filter(client => client.id !== undefined);
-            localStorage.setItem('clients', JSON.stringify(clients));
+            await saveClients(clients);
         }
-
+    
+        async function saveClientAndLogCall() {
+            const client = {
+                id: generateUniqueId(),
+                firstName: '',
+                lastName: '',
+                phoneNumber: '',
+                streetAddress: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                county: ''
+            };
+    
+            const clients = await fetchClients();
+            clients.push(client);
+            await saveClients(clients);
+    
+            window.location.href = `call-logging.html?id=${client.id}`;
+        }
+    
+        function generateUniqueId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+    
         // Load all clients on page load
-        window.onload = function() {
-            cleanUpClients();
-            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+        window.onload = async function () {
+            await cleanUpClients();
+            const clients = await fetchClients();
             const clientList = document.getElementById('clientList');
             clientList.innerHTML = '';
             clients.forEach((client) => {
@@ -70,24 +116,8 @@
                     </a>`;
                 clientList.appendChild(li);
             });
-        }
-
-        function saveClientAndLogCall() {
-            // Save client data to local storage
-            const client = {
-                id: generateUniqueId(),
-            };
-            let clients = JSON.parse(localStorage.getItem('clients')) || [];
-            clients.push(client);
-            localStorage.setItem('clients', JSON.stringify(clients));
-            window.location.href = `call-logging.html?id=${client.id}`;
-        }
-
-        function generateUniqueId() {
-            return '_' + Math.random().toString(36).substr(2, 9);
-        }
+        };
     </script>
-    <script src="server.js"></script>
     
 </body>
 </html>

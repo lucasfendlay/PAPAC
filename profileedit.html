@@ -18,56 +18,6 @@
         padding: 10px 15px;
     }
 
-    .household-member-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    align-items: center; /* Center the content horizontally */
-}
-
-.household-member {
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    width: 80%; /* Adjust the width as needed */
-    align-items: center; /* Center the content horizontally */
-}
-
-/* Style for the interaction list container */
-#interactionList {
-    list-style-type: none; /* Remove default bullet points */
-    padding: 0; /* Remove default padding */
-    margin: 20px 0; /* Add some spacing around the list */
-    max-height: 300px; /* Set a maximum height for the list */
-    overflow-y: auto; /* Add vertical scrolling if the list exceeds the max height */
-    border: 1px solid #ccc; /* Add a border around the list */
-    border-radius: 5px; /* Round the corners of the border */
-    background-color: #f9f9f9; /* Light background color */
-}
-
-/* Style for each list item */
-#interactionList li {
-    padding: 10px; /* Add padding inside each list item */
-    border-bottom: 1px solid #ddd; /* Add a divider between list items */
-    font-size: 14px; /* Adjust font size */
-    color: #333; /* Text color */
-}
-
-/* Style for the last list item (remove bottom border) */
-#interactionList li:last-child {
-    border-bottom: none;
-}
-
-/* Add hover effect for list items */
-#interactionList li:hover {
-    background-color: #f0f0f0; /* Slightly darker background on hover */
-    cursor: pointer; /* Change cursor to pointer on hover */
-}
-
     </style>
 </head>
 <body>
@@ -231,9 +181,9 @@
 
         <label for="speakingLanguage">Preferred Speaking Language:</label>
         <select id="speakingLanguage" name="speakingLanguage" onchange="updateSpeakingLanguage()">
-            <option value="" disabled selected>Please Select Language</option>
+            <option value="" disabled>Select Language</option>
             <option value="English">English</option>
-            <option value="American Sign Language">American Sign Language</option>
+            <option value="American Sign Language" selected>American Sign Language</option>
             <option value="Arabic">Arabic</option>
             <option value="Bengali">Bengali</option>
             <option value="Czech">Czech</option>
@@ -332,11 +282,22 @@ function updateSpeakingLanguage() {
                     }
                 }
     
-
-    function getQueryParam(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
-    }}}
+                const interactionList = document.getElementById('interactionList');
+                interactionList.innerHTML = '';
+                if (client.callLogs) {
+                    client.callLogs.forEach(log => {
+                        if (log) {
+                            const li = document.createElement('li');
+                            li.textContent = `${log.agent || ''} - ${log.timestamp || ''} - ${log.callerFirstName || ''} ${log.callerLastName || ''} - ${log.callerPhoneNumber || ''} - ${log.callDirection || ''} - ${log.reasonForCall || ''} - ${log.referralSource || ''}`;
+                            interactionList.appendChild(li);
+                        }
+                    });
+                }
+            } else {
+                alert('Client not found');
+            }
+        }
+    
     // Save client data, including selected speaking language and interpreter usage
     function saveClient() {
         const clientId = getQueryParam('id');
@@ -624,46 +585,5 @@ window.onload = function () {
     </script>
     <script src="notes.js"></script>
     <link rel="stylesheet" href="householdedit.css">
-    <script>
-    // Function to populate the interaction list
-    function populateInteractionList() {
-        const clientId = getQueryParam('id');
-        const clients = JSON.parse(localStorage.getItem('clients')) || [];
-        const client = clients.find(c => c.id === clientId);
-
-        if (client) {
-            const interactionList = document.getElementById('interactionList');
-            interactionList.innerHTML = ''; // Clear existing list items
-
-            if (client.callLogs && client.callLogs.length > 0) {
-                client.callLogs.forEach(log => {
-                    if (log) {
-                        const li = document.createElement('li');
-                        li.textContent = `${log.agent || ''} - ${log.timestamp || ''} - ${log.callerFirstName || ''} ${log.callerLastName || ''} - ${log.callerPhoneNumber || ''} - ${log.callDirection || ''} - ${log.reasonForCall || ''} - ${log.referralSource || ''}`;
-                        interactionList.appendChild(li);
-                    }
-                });
-            } else {
-                const noLogsMessage = document.createElement('li');
-                noLogsMessage.textContent = 'No interactions logged for this client.';
-                interactionList.appendChild(noLogsMessage);
-            }
-        } else {
-            console.error('Client not found');
-        }
-    }
-
-    // Add event listener for DOMContentLoaded to ensure this script runs without overwriting other onload logic
-    document.addEventListener('DOMContentLoaded', function () {
-        populateInteractionList();
-    });
-
-    // Function to get query parameter by name
-    function getQueryParam(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
-    }
-</script>
-<script src="server.js"></script>
 </body>
 </html>

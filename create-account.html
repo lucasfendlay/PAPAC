@@ -92,6 +92,58 @@
             <button type="submit">Create Account</button>
         </form>
     </div>
-    <script src="server.js"></script>
+    <!-- Example Form -->
+<form id="dataForm">
+    <input type="text" id="key" placeholder="Key" required />
+    <input type="text" id="value" placeholder="Value" required />
+    <button type="submit">Submit</button>
+  </form>
+  
+  <script>
+    // Handle form submission
+    document.getElementById('dataForm').addEventListener('submit', async (event) => {
+      event.preventDefault(); // Prevent the default form submission behavior
+  
+      // Get the key and value from the form inputs
+      const key = document.getElementById('key').value;
+      const value = document.getElementById('value').value;
+  
+      // Store the data in local storage
+      localStorage.setItem(key, value);
+  
+      // Call the upload function to send the data to the server
+      await uploadLocalStorageToBlob();
+    });
+  
+    // Function to upload local storage data to the server
+    async function uploadLocalStorageToBlob() {
+      try {
+        const keys = Object.keys(localStorage);
+        const data = {};
+  
+        // Collect all local storage data into an object
+        keys.forEach((key) => {
+          data[key] = localStorage.getItem(key);
+        });
+  
+        // Send the data to your server
+        const response = await fetch('/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Failed to upload data: ${response.statusText}`);
+        }
+  
+        console.log('Local storage data uploaded successfully');
+      } catch (error) {
+        console.error('Error uploading local storage data:', error);
+      }
+    }
+  </script>
+    
 </body>
 </html>
+

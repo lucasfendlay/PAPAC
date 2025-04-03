@@ -1,58 +1,39 @@
-const fs = require('fs');
-const path = require('path');
+// Function to upload data to Vercel Storage
+async function uploadToVercelStorage(data) {
+    const vercelEndpoint = 'https://your-vercel-endpoint.vercel.app/api/upload'; // Replace with your Vercel API endpoint
 
-// Path to the shared folder and JSON file
-const sharedFolderPath = "C:\PTC15939\Prime Therapeutics\Philadelphia PACE Benefit Center - PACAP"; // Replace with the actual shared folder path
-const sharedFilePath = path.join(sharedFolderPath, "clients.json");
+    try {
+        const response = await fetch(vercelEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
 
-// Ensure the shared file exists
-if (!fs.existsSync(sharedFilePath)) {
-    fs.writeFileSync(sharedFilePath, JSON.stringify({}), 'utf8');
+        if (!response.ok) {
+            throw new Error(`Failed to upload data: ${response.statusText}`);
+        }
+
+        console.log('LocalStorage data successfully uploaded to Vercel Storage.');
+    } catch (error) {
+        console.error('Error uploading data to Vercel Storage:', error);
+    }
 }
 
-const SharedFolderStorage = {
-    readData() {
-        try {
-            const data = fs.readFileSync(sharedFilePath, 'utf8');
-            return JSON.parse(data);
-        } catch (error) {
-            console.error("Error reading shared storage file:", error);
-            return {};
-        }
-    },
+// Function to copy all localStorage data and upload it
+function copyAndUploadLocalStorage() {
+    const localStorageData = {};
 
-    writeData(data) {
-        try {
-            fs.writeFileSync(sharedFilePath, JSON.stringify(data, null, 2), 'utf8');
-        } catch (error) {
-            console.error("Error writing to shared storage file:", error);
-        }
+    // Copy all localStorage key-value pairs
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        localStorageData[key] = localStorage.getItem(key);
     }
-};
 
-// Intercept localStorage calls
-const LocalStorageInterceptor = {
-    getItem(key) {
-        const data = SharedFolderStorage.readData();
-        return data[key] || null;
-    },
+    // Upload the data to Vercel Storage
+    uploadToVercelStorage(localStorageData);
+}
 
-    setItem(key, value) {
-        const data = SharedFolderStorage.readData();
-        data[key] = value;
-        SharedFolderStorage.writeData(data);
-    },
-
-    removeItem(key) {
-        const data = SharedFolderStorage.readData();
-        delete data[key];
-        SharedFolderStorage.writeData(data);
-    },
-
-    clear() {
-        SharedFolderStorage.writeData({});
-    }
-};
-
-// Override the global localStorage object
-window.localStorage = LocalStorageInterceptor;
+// Trigger the function on page load
+window.addEventListener('load', copyAndUploadLocalStorage);
