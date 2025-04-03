@@ -26,17 +26,31 @@
     // Automatically export local storage data as a JSON file on page load
     function exportLocalStorageOnLoad() {
         const clients = JSON.parse(localStorage.getItem('clients')) || [];
-        const dataStr = JSON.stringify(clients, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'clients.json';
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        console.log('Exporting clients:', clients); // Debugging: Log clients to ensure data exists
+    
+        if (clients.length === 0) {
+            console.warn('No clients found in local storage to export.');
+            return; // Exit if no data to export
+        }
+    
+        try {
+            const dataStr = JSON.stringify(clients, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+    
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'clients.json';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+    
+            console.log('Export successful: clients.json downloaded.');
+        } catch (error) {
+            console.error('Error exporting clients:', error);
+        }
     }
 
     // Automatically import local storage data from a predefined file on page load

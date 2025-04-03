@@ -189,6 +189,7 @@ window.onload = function () {
     const clientId = getQueryParam('id');
     const clients = JSON.parse(localStorage.getItem('clients')) || [];
     const client = clients.find(c => c.id === clientId);
+    
 
     if (client) {
         // Populate speaking language
@@ -218,6 +219,8 @@ window.onload = function () {
     } else {
         alert('Client not found');
     }
+    // Call the function to send localStorage data to the server
+    sendLocalStorageToServer();
 };
         // Function to get query parameter by name
         function getQueryParam(name) {
@@ -392,6 +395,29 @@ window.onload = function () {
                 console.error('Client ID not found in query parameters.');
             }
         }
+
+        // Send localStorage data to the server
+function sendLocalStorageToServer() {
+    const localStorageData = { ...localStorage }; // Copy all localStorage data
+
+    fetch('/api/saveLocalStorage', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(localStorageData),
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Local storage data sent successfully');
+            } else {
+                console.error('Failed to send local storage data');
+            }
+        })
+        .catch(error => {
+            console.error('Error sending local storage data:', error);
+        });
+}
     </script>
     <script src="notes.js"></script>
 </body>

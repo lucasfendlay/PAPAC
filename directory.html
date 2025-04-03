@@ -19,12 +19,7 @@
     <input type="text" id="searchStreetAddress" onkeyup="searchClients()" placeholder="Search by street address...">
     <input type="text" id="searchCity" onkeyup="searchClients()" placeholder="Search by city...">
     <ul id="clientList"></ul>
-
-    <!-- Add buttons for exporting and importing data -->
-<button onclick="exportLocalStorage()">Export Clients</button>
-<input type="file" id="importFile" onchange="importLocalStorage()" style="display: none;">
-<button onclick="document.getElementById('importFile').click()">Import Clients</button>
-
+    
     <script>
         function searchClients() {
             const firstNameInput = document.getElementById('searchFirstName').value.toLowerCase();

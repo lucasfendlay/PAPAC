@@ -13,26 +13,53 @@
     <br>
     <button onclick="saveClientAndLogCall()">Add New Client</button>
     <button id="clearLocalStorageButton">Clear Local Storage</button>
+    <button id="exportToJsonButton">Export to JSON</button>
 <script>
+    // On page load, import JSON and replace local storage
+    window.addEventListener('load', async function() {
+        try {
+            const response = await fetch('clients.json'); // Replace with the correct JSON file path
+            const data = await response.json();
+            localStorage.setItem('clients', JSON.stringify(data));
+            console.log('Local storage updated with JSON data');
+        } catch (error) {
+            console.error('Error fetching JSON file:', error);
+        }
+    });
+
     document.getElementById('clearLocalStorageButton').addEventListener('click', function() {
         localStorage.clear();
         console.log('Local storage cleared');
     });
 
-    function saveClientAndLogCall() {
-            // Save client data to local storage
-            const client = {
-                id: generateUniqueId(),
-            };
-            let clients = JSON.parse(localStorage.getItem('clients')) || [];
-            clients.push(client);
-            localStorage.setItem('clients', JSON.stringify(clients));
-            window.location.href = `call-logging.html?id=${client.id}`;
-        }
+    document.getElementById('exportToJsonButton').addEventListener('click', function() {
+        const clients = JSON.parse(localStorage.getItem('clients')) || [];
+        const blob = new Blob([JSON.stringify(clients, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
 
-        function generateUniqueId() {
-            return '_' + Math.random().toString(36).substr(2, 9);
-        }
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'clients.json';
+        a.click();
+
+        URL.revokeObjectURL(url);
+        console.log('JSON file exported');
+    });
+
+    function saveClientAndLogCall() {
+        // Save client data to local storage
+        const client = {
+            id: generateUniqueId(),
+        };
+        let clients = JSON.parse(localStorage.getItem('clients')) || [];
+        clients.push(client);
+        localStorage.setItem('clients', JSON.stringify(clients));
+        window.location.href = `call-logging.html?id=${client.id}`;
+    }
+
+    function generateUniqueId() {
+        return '_' + Math.random().toString(36).substr(2, 9);
+    }
 </script>
 
 </body>
