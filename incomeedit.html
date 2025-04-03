@@ -210,6 +210,18 @@ body {
     </style>
 </head>
 <body>
+
+    <div class="button container">
+        <button id="profile-view-button" class="interactive" onclick="GoToProfileEdit()">Profile</button>
+        <button id="current-enrollments-view-button" class="interactive" onclick="goToHouseholdEdit()">Household</button>
+            <button id="relationships-edit-button" class="interactive">Relationships</button>
+            <button id="CR-edit-button" class="interactive" onclick="goToCRedit()">Current Enrollments</button>
+            <button id="assets-view-button" class="interactive" onclick="goToAssetsedit()">Assets</button>
+            <button id="expenses-view-button" class="interactive" onclick="goToExpensesedit()">Expenses</button>
+            <button id="income-edit-button" class="interactive" onclick="goToIncomeedit()">Income</button>
+            <button id="referrals-view-button" onclick="gotoReferrals()" class="interactive">Referrals</button>
+            </div>
+
     <h1>Income</h1>
     <div id="notes-list"></div>
     <textarea id="note-input" placeholder="Write your note here..."></textarea>
@@ -564,8 +576,106 @@ function saveAndRedirectToAssets() {
             }
         }
         // ...existing code...
+
+        function GoToProfileEdit() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `profileedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+     
+    function goToCRedit() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `currentenrollmentsedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+        function goToAssetsedit() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToExpensesedit() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `expensesedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        document.getElementById('relationships-edit-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `relationshipsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+
+        function goToHouseholdEdit() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `householdedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function goToCRedit() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `currentenrollmentsedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    function gotoReferrals() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `referralsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function gotoEstimations() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `estimationsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+
+
     </script> 
     <script src="notes.js"></script>  
+    <script src="server.js"></script>
 
 </body>
 </html>

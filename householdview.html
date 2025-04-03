@@ -248,14 +248,6 @@ body {
             }
         }
 
-        // Example of setting selected values
-        document.getElementById('household-size').value = "3"; // Set the selected value for household size
-        document.getElementById('disability-yes').classList.add('selected'); // Highlight the selected option
-        document.getElementById('medicare-no').classList.add('selected'); // Highlight the selected option
-        document.getElementById('medicaid-yes').classList.add('selected'); // Highlight the selected option
-        document.getElementById('student-no').classList.add('selected'); // Highlight the selected option
-        document.getElementById('snap-yes').classList.add('selected'); // Highlight the selected option
-
         // Redirect to profile view page
         document.getElementById('profile-view-button').addEventListener('click', function() {
             const clientId = getQueryParameter('id');
@@ -327,5 +319,6 @@ body {
 
     </script>
     <script src="notes.js"></script>
+    <script src="server.js"></script>
 </body>
 </html>
