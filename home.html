@@ -62,5 +62,47 @@
     }
 </script>
 
+<script>
+    async function syncLocalStorageWithServer() {
+        try {
+            // Fetch the clients.json file from the server
+            const response = await fetch('https://https://papac.vercel.app/clients.json');
+            if (!response.ok) {
+                throw new Error('Failed to fetch clients.json from the server');
+            }
+            const serverClients = await response.json();
+
+            // Get the localStorage data
+            const localClients = JSON.parse(localStorage.getItem('clients')) || [];
+
+            // Merge the two datasets
+            const mergedClients = [...localClients];
+
+            serverClients.forEach(serverClient => {
+                const existingClientIndex = mergedClients.findIndex(client => client.id === serverClient.id);
+                if (existingClientIndex !== -1) {
+                    // Update the existing client with server data
+                    mergedClients[existingClientIndex] = {
+                        ...mergedClients[existingClientIndex],
+                        ...serverClient
+                    };
+                } else {
+                    // Add new client from the server
+                    mergedClients.push(serverClient);
+                }
+            });
+
+            // Save the merged data back to localStorage
+            localStorage.setItem('clients', JSON.stringify(mergedClients));
+            console.log('Local storage synced with server data');
+        } catch (error) {
+            console.error('Error syncing local storage with server:', error);
+        }
+    }
+
+    // Call the sync function on page load
+    window.addEventListener('load', syncLocalStorageWithServer);
+</script>
+
 </body>
 </html>
