@@ -6,8 +6,81 @@
     <title>Edit Client Profile</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="notes.css">
+    <style>
+.button-container {
+        display: flex;
+        gap: 10px; /* Adds spacing between buttons */
+        flex-wrap: wrap; /* Ensures buttons wrap to the next line if needed */
+    }
+
+    .button-container button {
+        flex: 1; /* Ensures buttons are evenly spaced */
+        padding: 10px 15px;
+    }
+
+    .household-member-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    align-items: center; /* Center the content horizontally */
+}
+
+.household-member {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 80%; /* Adjust the width as needed */
+    align-items: center; /* Center the content horizontally */
+}
+
+/* Style for the interaction list container */
+#interactionList {
+    list-style-type: none; /* Remove default bullet points */
+    padding: 0; /* Remove default padding */
+    margin: 20px 0; /* Add some spacing around the list */
+    max-height: 300px; /* Set a maximum height for the list */
+    overflow-y: auto; /* Add vertical scrolling if the list exceeds the max height */
+    border: 1px solid #ccc; /* Add a border around the list */
+    border-radius: 5px; /* Round the corners of the border */
+    background-color: #f9f9f9; /* Light background color */
+}
+
+/* Style for each list item */
+#interactionList li {
+    padding: 10px; /* Add padding inside each list item */
+    border-bottom: 1px solid #ddd; /* Add a divider between list items */
+    font-size: 14px; /* Adjust font size */
+    color: #333; /* Text color */
+}
+
+/* Style for the last list item (remove bottom border) */
+#interactionList li:last-child {
+    border-bottom: none;
+}
+
+/* Add hover effect for list items */
+#interactionList li:hover {
+    background-color: #f0f0f0; /* Slightly darker background on hover */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+    </style>
 </head>
 <body>
+    <div class="button container">
+    <button id="household-view-button" class="interactive" onclick="GoToHouseholdEdit()">Household</button>
+        <button id="relationships-edit-button" class="interactive">Relationships</button>
+        <button id="current-enrollments-view-button" class="interactive" onclick="goToCRedit()">Current Enrollments</button>
+        <button id="income-view-button" class="interactive" onclick="GoToIncomeedit()">Income</button>
+        <button id="assets-view-button" class="interactive" onclick="goToAssetsedit()">Assets</button>
+        <button id="expenses-view-button" class="interactive" onclick="goToExpensesedit()">Expenses</button>
+        <button id="estimations-view-button" class="interactive" onclick="gotoEstimations()">Estimations</button>
+        <button id="referrals-view-button" onclick="goToReferrals()" class="interactive">Referrals</button>
+        </div>
     <h1>Edit Client Profile</h1>
     <div id="notes-list"></div>
     <textarea id="note-input" placeholder="Write your note here..."></textarea>
@@ -155,6 +228,50 @@
             <option value="Wyoming">Wyoming</option>
             <option value="York">York</option>
         </select><br><br>
+
+        <label for="speakingLanguage">Preferred Speaking Language:</label>
+        <select id="speakingLanguage" name="speakingLanguage" onchange="updateSpeakingLanguage()">
+            <option value="" disabled selected>Please Select Language</option>
+            <option value="English">English</option>
+            <option value="American Sign Language">American Sign Language</option>
+            <option value="Arabic">Arabic</option>
+            <option value="Bengali">Bengali</option>
+            <option value="Czech">Czech</option>
+            <option value="Danish">Danish</option>
+            <option value="Dutch">Dutch</option>
+            <option value="Finnish">Finnish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Greek">Greek</option>
+            <option value="Hebrew">Hebrew</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Hungarian">Hungarian</option>
+            <option value="Italian">Italian</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Korean">Korean</option>
+            <option value="Mandarin">Mandarin</option>
+            <option value="Norwegian">Norwegian</option>
+            <option value="Other">Other</option>
+            <option value="Persian">Persian</option>
+            <option value="Polish">Polish</option>
+            <option value="Portuguese">Portuguese</option>
+            <option value="Romanian">Romanian</option>
+            <option value="Russian">Russian</option>
+            <option value="Spanish">Spanish</option>
+            <option value="Swahili">Swahili</option>
+            <option value="Swedish">Swedish</option>
+            <option value="Tagalog">Tagalog</option>
+            <option value="Thai">Thai</option>
+            <option value="Turkish">Turkish</option>
+            <option value="Urdu">Urdu</option>
+            <option value="Vietnamese">Vietnamese</option>
+        </select>
+
+        <div class="selection-box">
+            <label id="intepretor-label">Did you use a language interpreter?</label>
+            <div id="interpretor-yes" data-value="yes" onclick="updateInterpreter('yes')">Yes</div>
+            <div id="interpretor-no" data-value="no" onclick="updateInterpreter('no')">No</div>
+        </div>
         
         <button type="button" onclick="saveClient()">Save and Release Profile</button>
         <button type="button" onclick="validateAndStartScreening()">Start Screening</button>
@@ -162,6 +279,22 @@
     <h2>Interaction Tracker</h2>
     <ul id="interactionList"></ul>
     <script>
+
+function updateSpeakingLanguage() {
+    const clientId = getQueryParam('id');
+    const selectedLanguage = document.getElementById('speakingLanguage').value;
+
+    let clients = JSON.parse(localStorage.getItem('clients')) || [];
+    const clientIndex = clients.findIndex(c => c.id === clientId);
+
+    if (clientIndex !== -1) {
+        clients[clientIndex].speakingLanguage = selectedLanguage; // Update the speakingLanguage field
+        localStorage.setItem('clients', JSON.stringify(clients)); // Save updated clients array to local storage
+        console.log(`Updated speakingLanguage for client ID ${clientId} to ${selectedLanguage}`);
+    } else {
+        console.error('Client not found');
+    }
+}
         // Function to get query parameter by name
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -199,47 +332,82 @@
                     }
                 }
     
-                const interactionList = document.getElementById('interactionList');
-                interactionList.innerHTML = '';
-                if (client.callLogs) {
-                    client.callLogs.forEach(log => {
-                        if (log) {
-                            const li = document.createElement('li');
-                            li.textContent = `${log.agent || ''} - ${log.timestamp || ''} - ${log.callerFirstName || ''} ${log.callerLastName || ''} - ${log.callerPhoneNumber || ''} - ${log.callDirection || ''} - ${log.reasonForCall || ''} - ${log.referralSource || ''}`;
-                            interactionList.appendChild(li);
-                        }
-                    });
+
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }}}
+    // Save client data, including selected speaking language and interpreter usage
+    function saveClient() {
+        const clientId = getQueryParam('id');
+        let clients = JSON.parse(localStorage.getItem('clients')) || [];
+        const clientIndex = clients.findIndex(c => c.id === clientId);
+
+        if (clientIndex !== -1) {
+            const existingClient = clients[clientIndex];
+            clients[clientIndex] = {
+                ...existingClient,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                streetAddress: document.getElementById('streetAddress').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipCode: document.getElementById('zipCode').value,
+                county: document.getElementById('county').value,
+                speakingLanguage: document.getElementById('speakingLanguage').value, // Save selected language
+                interpreterUsed: document.querySelector('.selection-box div.selected')?.dataset.value || null // Save interpreter selection
+            };
+            localStorage.setItem('clients', JSON.stringify(clients));
+            window.location.href = 'profileview.html?id=' + clientId;
+        } else {
+            alert('Client not found');
+        }
+    }
+
+    // Load client data on page load, including selected speaking language and interpreter usage
+    window.onload = function() {
+        const clientId = getQueryParam('id');
+        const clients = JSON.parse(localStorage.getItem('clients')) || [];
+        const client = clients.find(c => c.id === clientId);
+
+        if (client) {
+            if (client.firstName) {
+                document.getElementById('firstName').value = client.firstName;
+                document.getElementById('lastName').value = client.lastName;
+                document.getElementById('phoneNumber').value = client.phoneNumber;
+                document.getElementById('streetAddress').value = client.streetAddress;
+                document.getElementById('city').value = client.city;
+                document.getElementById('state').value = client.state;
+                document.getElementById('zipCode').value = client.zipCode;
+                document.getElementById('county').value = client.county;
+            }
+
+            // Recall selected speaking language
+            if (client.speakingLanguage) {
+                document.getElementById('speakingLanguage').value = client.speakingLanguage;
+            }
+
+            // Recall interpreter usage
+            if (client.interpreterUsed) {
+                const selectedInterpreter = document.querySelector(`.selection-box div[data-value="${client.interpreterUsed}"]`);
+                if (selectedInterpreter) {
+                    selectedInterpreter.classList.add('selected');
                 }
-            } else {
-                alert('Client not found');
             }
+        } else {
+            alert('Client not found');
         }
-    
-        // Save client data
-        function saveClient() {
-            const clientId = getQueryParam('id');
-            let clients = JSON.parse(localStorage.getItem('clients')) || [];
-            const clientIndex = clients.findIndex(c => c.id === clientId);
-    
-            if (clientIndex !== -1) {
-                const existingClient = clients[clientIndex];
-                clients[clientIndex] = {
-                    ...existingClient,
-                    firstName: document.getElementById('firstName').value,
-                    lastName: document.getElementById('lastName').value,
-                    phoneNumber: document.getElementById('phoneNumber').value,
-                    streetAddress: document.getElementById('streetAddress').value,
-                    city: document.getElementById('city').value,
-                    state: document.getElementById('state').value,
-                    zipCode: document.getElementById('zipCode').value,
-                    county: document.getElementById('county').value,
-                };
-                localStorage.setItem('clients', JSON.stringify(clients));
-                window.location.href = 'profileview.html?id=' + clientId;
-            } else {
-                alert('Client not found');
-            }
-        }
+    };
+
+    // Add click event listeners to interpreter selection buttons
+    document.querySelectorAll('.selection-box div').forEach(div => {
+        div.addEventListener('click', function() {
+            document.querySelectorAll('.selection-box div').forEach(d => d.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+
     
         // Validate form fields and start screening
         function validateAndStartScreening() {
@@ -312,7 +480,190 @@
                 }
             }
         }
+
+        function GoToHouseholdEdit() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `householdedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+     
+    function goToCRedit() {
+        const clientId = getQueryParameter('id');
+        if (clientId) {
+            window.location.href = `currentenrollmentsedit.html?id=${clientId}`;
+        } else {
+            console.error('Client ID not found in query parameters.');
+        }
+    }
+
+    function GoToIncomeedit() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `incomeedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToAssetsedit() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `assetsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function goToExpensesedit() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `expensesedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        document.getElementById('relationships-edit-button').addEventListener('click', function() {
+            const clientId = getQueryParameter('id');
+            if (clientId) {
+                window.location.href = `relationshipsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        });
+
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function goToReferrals() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `referralsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function gotoEstimations() {
+            const clientId = getQueryParameter('id');
+            console.log(`Retrieved clientId from query parameters: ${clientId}`);
+            if (clientId) {
+                console.log(`Redirecting to currentenrollmentsview.html with clientId: ${clientId}`);
+                window.location.href = `estimationsedit.html?id=${clientId}`;
+            } else {
+                console.error('Client ID not found in query parameters.');
+            }
+        }
+
+        function updateInterpreter(value) {
+    const clientId = getQueryParam('id');
+    let clients = JSON.parse(localStorage.getItem('clients')) || [];
+    const clientIndex = clients.findIndex(c => c.id === clientId);
+
+    if (clientIndex !== -1) {
+        clients[clientIndex].interpreter = value; // Update the interpreter field
+        localStorage.setItem('clients', JSON.stringify(clients)); // Save updated clients array to local storage
+
+        // Update UI to reflect the selected option
+        document.querySelectorAll('.selection-box div').forEach(div => div.classList.remove('selected'));
+        document.querySelector(`.selection-box div[data-value="${value}"]`).classList.add('selected');
+
+        console.log(`Updated interpreter for client ID ${clientId} to ${value}`);
+    } else {
+        console.error('Client not found');
+    }
+}
+
+window.onload = function () {
+    const clientId = getQueryParam('id');
+    const clients = JSON.parse(localStorage.getItem('clients')) || [];
+    const client = clients.find(c => c.id === clientId);
+
+    if (client) {
+        // Recall interpreter usage
+        if (client.interpreter) {
+            const selectedInterpreter = document.querySelector(`.selection-box div[data-value="${client.interpreter}"]`);
+            if (selectedInterpreter) {
+                selectedInterpreter.classList.add('selected');
+            }
+        }
+
+        // Recall other fields (if applicable)
+        if (client.firstName) {
+            document.getElementById('firstName').value = client.firstName;
+            document.getElementById('lastName').value = client.lastName;
+            document.getElementById('phoneNumber').value = client.phoneNumber;
+            document.getElementById('streetAddress').value = client.streetAddress;
+            document.getElementById('city').value = client.city;
+            document.getElementById('state').value = client.state;
+            document.getElementById('zipCode').value = client.zipCode;
+            document.getElementById('county').value = client.county;
+        }
+
+        // Recall speaking language
+        if (client.speakingLanguage) {
+            document.getElementById('speakingLanguage').value = client.speakingLanguage;
+        }
+    } else {
+        alert('Client not found');
+    }
+};
     </script>
     <script src="notes.js"></script>
+    <link rel="stylesheet" href="householdedit.css">
+    <script>
+    // Function to populate the interaction list
+    function populateInteractionList() {
+        const clientId = getQueryParam('id');
+        const clients = JSON.parse(localStorage.getItem('clients')) || [];
+        const client = clients.find(c => c.id === clientId);
+
+        if (client) {
+            const interactionList = document.getElementById('interactionList');
+            interactionList.innerHTML = ''; // Clear existing list items
+
+            if (client.callLogs && client.callLogs.length > 0) {
+                client.callLogs.forEach(log => {
+                    if (log) {
+                        const li = document.createElement('li');
+                        li.textContent = `${log.agent || ''} - ${log.timestamp || ''} - ${log.callerFirstName || ''} ${log.callerLastName || ''} - ${log.callerPhoneNumber || ''} - ${log.callDirection || ''} - ${log.reasonForCall || ''} - ${log.referralSource || ''}`;
+                        interactionList.appendChild(li);
+                    }
+                });
+            } else {
+                const noLogsMessage = document.createElement('li');
+                noLogsMessage.textContent = 'No interactions logged for this client.';
+                interactionList.appendChild(noLogsMessage);
+            }
+        } else {
+            console.error('Client not found');
+        }
+    }
+
+    // Add event listener for DOMContentLoaded to ensure this script runs without overwriting other onload logic
+    document.addEventListener('DOMContentLoaded', function () {
+        populateInteractionList();
+    });
+
+    // Function to get query parameter by name
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+</script>
+<script src="server.js"></script>
 </body>
 </html>

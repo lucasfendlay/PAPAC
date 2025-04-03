@@ -6,6 +6,7 @@
     <title>Edit Client Profile</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="notes.css">
+    <link rel="stylesheet" href="householdedit.css">
     <style>
         .readonly {
             pointer-events: none;
@@ -56,6 +57,37 @@
     align-items: center; /* Center the content horizontally */
 }
 
+/* Style for the interaction list container */
+#interactionList {
+    list-style-type: none; /* Remove default bullet points */
+    padding: 0; /* Remove default padding */
+    margin: 20px 0; /* Add some spacing around the list */
+    max-height: 300px; /* Set a maximum height for the list */
+    overflow-y: auto; /* Add vertical scrolling if the list exceeds the max height */
+    border: 1px solid #ccc; /* Add a border around the list */
+    border-radius: 5px; /* Round the corners of the border */
+    background-color: #f9f9f9; /* Light background color */
+}
+
+/* Style for each list item */
+#interactionList li {
+    padding: 10px; /* Add padding inside each list item */
+    border-bottom: 1px solid #ddd; /* Add a divider between list items */
+    font-size: 14px; /* Adjust font size */
+    color: #333; /* Text color */
+}
+
+/* Style for the last list item (remove bottom border) */
+#interactionList li:last-child {
+    border-bottom: none;
+}
+
+/* Add hover effect for list items */
+#interactionList li:hover {
+    background-color: #f0f0f0; /* Slightly darker background on hover */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
 .household-member {
     display: flex;
     flex-direction: column;
@@ -67,25 +99,19 @@
     align-items: center; /* Center the content horizontally */
 }
 
-.selection-box {
-    margin-top: 10px;
-    text-align: center; /* Center the text inside the selection box */
-}
 
-.selection-option {
-    display: inline-block;
-    padding: 5px 10px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-}
+.button-container {
+        display: flex;
+        gap: 10px; /* Adds spacing between buttons */
+        flex-wrap: wrap; /* Ensures buttons wrap to the next line if needed */
+    }
 
-.selection-option.selected {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
+    .button-container button {
+        flex: 1; /* Ensures buttons are evenly spaced */
+        padding: 10px 15px;
+    }
+
+
     </style>
 </head>
 <body class="readonly">
@@ -127,7 +153,56 @@
         
         <label for="county">County:</label>
         <input type="text" id="county" name="county" required><br><br>
-    </form>
+    
+
+    
+
+    <label for="speakingLanguage">Preferred Speaking Language:</label>
+<select id="speakingLanguage" name="speakingLanguage" disabled>
+    <option value="" disabled>Select Language</option>
+    <option value="English">English</option>
+    <option value="American Sign Language">American Sign Language</option>
+    <option value="Arabic">Arabic</option>
+    <option value="Bengali">Bengali</option>
+    <option value="Czech">Czech</option>
+    <option value="Danish">Danish</option>
+    <option value="Dutch">Dutch</option>
+    <option value="Finnish">Finnish</option>
+    <option value="French">French</option>
+    <option value="German">German</option>
+    <option value="Greek">Greek</option>
+    <option value="Hebrew">Hebrew</option>
+    <option value="Hindi">Hindi</option>
+    <option value="Hungarian">Hungarian</option>
+    <option value="Italian">Italian</option>
+    <option value="Japanese">Japanese</option>
+    <option value="Korean">Korean</option>
+    <option value="Mandarin">Mandarin</option>
+    <option value="Norwegian">Norwegian</option>
+    <option value="Other">Other</option>
+    <option value="Persian">Persian</option>
+    <option value="Polish">Polish</option>
+    <option value="Portuguese">Portuguese</option>
+    <option value="Romanian">Romanian</option>
+    <option value="Russian">Russian</option>
+    <option value="Spanish">Spanish</option>
+    <option value="Swahili">Swahili</option>
+    <option value="Swedish">Swedish</option>
+    <option value="Tagalog">Tagalog</option>
+    <option value="Thai">Thai</option>
+    <option value="Turkish">Turkish</option>
+    <option value="Urdu">Urdu</option>
+    <option value="Vietnamese">Vietnamese</option>
+</select>
+
+<div class="selection-box">
+    <label id="interpreter-label">Did you use a language interpreter?</label>
+    <div id="interpreter-yes" data-value="yes" class="selection-option">Yes</div>
+    <div id="interpreter-no" data-value="no" class="selection-option">No</div>
+</div>
+
+</form>
+    
 
     <button id="lognewcall" onclick="goToLogging()" class="interactive">Log New Call</button>
 
@@ -135,6 +210,41 @@
     <h2>Interaction Tracker</h2>
     <ul id="interactionList"></ul>
     <script>
+
+window.onload = function () {
+    const clientId = getQueryParam('id');
+    const clients = JSON.parse(localStorage.getItem('clients')) || [];
+    const client = clients.find(c => c.id === clientId);
+
+    if (client) {
+        // Populate speaking language
+        if (client.speakingLanguage) {
+            document.getElementById('speakingLanguage').value = client.speakingLanguage;
+        }
+
+        // Highlight interpreter selection
+        if (client.interpreter) {
+            const selectedInterpreter = document.querySelector(`.selection-box div[data-value="${client.interpreter}"]`);
+            if (selectedInterpreter) {
+                selectedInterpreter.classList.add('selected');
+            }
+        }
+
+        // Populate other fields
+        if (client.firstName) {
+            document.getElementById('firstName').value = client.firstName;
+            document.getElementById('lastName').value = client.lastName;
+            document.getElementById('phoneNumber').value = client.phoneNumber;
+            document.getElementById('streetAddress').value = client.streetAddress;
+            document.getElementById('city').value = client.city;
+            document.getElementById('state').value = client.state;
+            document.getElementById('zipCode').value = client.zipCode;
+            document.getElementById('county').value = client.county;
+        }
+    } else {
+        alert('Client not found');
+    }
+};
         // Function to get query parameter by name
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -310,5 +420,6 @@
         }
     </script>
     <script src="notes.js"></script>
+    <script src="server.js"></script>
 </body>
 </html>

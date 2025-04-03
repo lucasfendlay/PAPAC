@@ -16,10 +16,16 @@ document.addEventListener('DOMContentLoaded', function() {
         notesList.innerHTML = '';
         const client = clients.find(c => c.id === clientId);
         if (client && client.notes) {
+            console.log('Rendering notes:', client.notes); // Debugging line
             client.notes.slice().reverse().forEach((note, index) => {
                 const noteDiv = document.createElement('div');
                 noteDiv.className = 'note';
-                const cleanedUsername = note.username.replace('"username":', '').replace(/"/g, '').trim();
+    
+                // Ensure username is valid
+                const cleanedUsername = note.username
+                    ? note.username.replace('"username":', '').replace(/"/g, '').trim()
+                    : 'Automated Import';
+    
                 noteDiv.innerHTML = `
                     <p>${note.text}</p>
                     <small>${note.timestamp} by ${cleanedUsername}</small>
@@ -86,3 +92,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const clientId = getClientId();
     renderNotes(clientId);
   });
+  function updateNotes(clientId, updatedNotes) {
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+        client.notes = updatedNotes;
+        localStorage.setItem('clients', JSON.stringify(clients));
+        renderNotes(clientId); // Re-render the notes container
+    }
+}
+  
