@@ -19,77 +19,20 @@
     <input type="text" id="searchCity" onkeyup="searchClients()" placeholder="Search by city...">
     <ul id="clientList"></ul>
     <script>
-    (async function copyLocalStorageToKV() {
-        // Replace with your actual Vercel KV URL and token
-        const KV_BASE_URL = 'https://redis://default:Gn3vQe0LVr5ZwaImofpiueQfFquG8JaP@redis-16284.c322.us-east-1-2.ec2.redns.redis-cloud.com:16284"-kv-url>'; // Replace with your Vercel KV URL        const KV_AUTH_HEADER = 'Bearer <your-auth-token>'; // Replace with your Vercel KV token
-        const KV_AUTH_HEADER = 'OF10ALh7WYchdPoY4yaitgrk'; // Replace with your Vercel KV token
-        
-        // Fetch data from localStorage
-        const localStorageClients = JSON.parse(localStorage.getItem('clients')) || [];
-    
-        if (localStorageClients.length === 0) {
-            console.log('No clients found in localStorage.');
-            return;
-        }
-    
-        console.log('Clients found in localStorage:', localStorageClients);
-    
-        // Function to save clients to Vercel KV
-        async function saveClients(newClients) {
-    // Fetch existing clients from Vercel KV
-    const response = await fetch(`${KV_BASE_URL}/clients`, {
-        headers: {
-            Authorization: KV_AUTH_HEADER
-        }
-    });
-
-    let existingClients = [];
-    if (response.ok) {
-        existingClients = await response.json();
-    } else {
-        console.error('Failed to fetch existing clients:', await response.text());
-    }
-
-    // Merge existing clients with new clients
-    const mergedClients = [...existingClients, ...newClients];
-
-    // Save the merged clients back to Vercel KV
-    const saveResponse = await fetch(`${KV_BASE_URL}/clients`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: KV_AUTH_HEADER
-        },
-        body: JSON.stringify(mergedClients)
-    });
-
-    if (saveResponse.ok) {
-        console.log('Clients successfully merged and saved to Vercel KV.');
-    } else {
-        console.error('Failed to save merged clients to Vercel KV:', await saveResponse.text());
-    }
-}
-    
-        // Save localStorage data to Vercel KV
-        await saveClients(localStorageClients);
-    })();
-    
-        async function searchClients() {
+        function searchClients() {
             const firstNameInput = document.getElementById('searchFirstName').value.toLowerCase();
             const lastNameInput = document.getElementById('searchLastName').value.toLowerCase();
             const phoneNumberInput = document.getElementById('searchPhoneNumber').value.toLowerCase();
             const streetAddressInput = document.getElementById('searchStreetAddress').value.toLowerCase();
             const cityInput = document.getElementById('searchCity').value.toLowerCase();
-    
-            const clients = await fetchClients();
-            const filteredClients = clients.filter(client =>
-                client.firstName.toLowerCase().includes(firstNameInput) &&
-                client.lastName.toLowerCase().includes(lastNameInput) &&
-                client.phoneNumber.toLowerCase().includes(phoneNumberInput) &&
-                client.streetAddress.toLowerCase().includes(streetAddressInput) &&
-                client.city.toLowerCase().includes(cityInput)
-            );
-    
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const filteredClients = clients.filter(client => 
+    client.firstName.toLowerCase().includes(firstNameInput) && 
+    client.lastName.toLowerCase().includes(lastNameInput) &&
+    client.phoneNumber.toLowerCase().includes(phoneNumberInput) &&
+    client.streetAddress.toLowerCase().includes(streetAddressInput) &&
+    client.city.toLowerCase().includes(cityInput)
+);
             const clientList = document.getElementById('clientList');
             clientList.innerHTML = '';
             filteredClients.forEach((client) => {
@@ -103,41 +46,17 @@
                 clientList.appendChild(li);
             });
         }
-    
-        async function cleanUpClients() {
-            let clients = await fetchClients();
+
+        function cleanUpClients() {
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
             clients = clients.filter(client => client.id !== undefined);
-            await saveClients(clients);
+            localStorage.setItem('clients', JSON.stringify(clients));
         }
-    
-        async function saveClientAndLogCall() {
-            const client = {
-                id: generateUniqueId(),
-                firstName: '',
-                lastName: '',
-                phoneNumber: '',
-                streetAddress: '',
-                city: '',
-                state: '',
-                zipCode: '',
-                county: ''
-            };
-    
-            const clients = await fetchClients();
-            clients.push(client);
-            await saveClients(clients);
-    
-            window.location.href = `call-logging.html?id=${client.id}`;
-        }
-    
-        function generateUniqueId() {
-            return '_' + Math.random().toString(36).substr(2, 9);
-        }
-    
+
         // Load all clients on page load
-        window.onload = async function () {
-            await cleanUpClients();
-            const clients = await fetchClients();
+        window.onload = function() {
+            cleanUpClients();
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
             const clientList = document.getElementById('clientList');
             clientList.innerHTML = '';
             clients.forEach((client) => {
@@ -150,8 +69,22 @@
                     </a>`;
                 clientList.appendChild(li);
             });
-        };
+        }
+
+        function saveClientAndLogCall() {
+            // Save client data to local storage
+            const client = {
+                id: generateUniqueId(),
+            };
+            let clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.push(client);
+            localStorage.setItem('clients', JSON.stringify(clients));
+            window.location.href = `call-logging.html?id=${client.id}`;
+        }
+
+        function generateUniqueId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
     </script>
-    
 </body>
 </html>
